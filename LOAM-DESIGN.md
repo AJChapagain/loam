@@ -5,7 +5,8 @@ first, then the code.
 
 ## 1. Pitch
 
-A daily garden game. Tagline: "grow a little garden, every day".
+A daily garden game. Tagline: "Today's plot is ready."
+Home line: "Plant your 12 seeds. Whatever blooms stays in your garden."
 ("Puzzle" is deliberately not used — it sounds like homework. The game
 is a garden, not a test.)
 
@@ -150,13 +151,47 @@ Done looks like: open the file, see a 6×6 grid.
 
 ### Step 1b — Home screen (do this before step 2)
 Players must not land straight on a bare grid. Prompt: add a home
-screen shown first — LOAM title, tagline "grow a little garden, every
-day", one line explaining the game ("Place 12 seeds. Matching
-neighbours bloom. Your garden grows one row a day."), and a big button
-"Tend today's garden". The grid stays hidden until the button is
-tapped. Change nothing else.
+screen shown first — LOAM title, tagline "Today's plot is ready.", one
+line explaining the game ("Plant your 12 seeds. Whatever blooms stays
+in your garden."), and a big button "Tend today's garden". The grid
+stays hidden until the button is tapped. Change nothing else.
 Done looks like: open the file, see the home screen first; tap the
 button, the grid appears.
+
+### Step 2 — Seeds + placement (may be combined with the wording fix
+above into one Claude message, since both are tiny — but never combine
+step 2 with step 3 or later)
+Prompt: add a seed tray below the grid with 12 seeds: 4 sunflowers,
+4 roses, 4 tulips. Tap a seed in the tray to select it (highlight it),
+then tap an empty grid cell to plant it there. Tap a planted seed to
+pick it back up into the tray. Show how many seeds are left to plant.
+Keep all existing styling, the home screen, and the grid exactly the
+same. Do NOT add blooming, garden rows, saving, or anything else yet.
+Done looks like: you can place and remove seeds by tapping, and the
+seeds-left counter counts down and back up.
+
+### Step 2b — Taste pass (presentation only, logic untouched) — DONE
+Botanical identity: cream paper (#f6f0dd), deep green ink (#22392c),
+marigold accent (#e8a13d), Fraunces display font for the title
+(Google Fonts link, Georgia fallback), three small inline SVG flowers
+replacing emoji, seed tray styled as a labeled seed packet ("Today's
+Seeds"). Further visual refinement is DEFERRED to step 12 polish —
+do not chase perfect taste now; bank the improvement and keep building
+mechanics.
+
+### Step 3 — Bloom
+Prompt: add blooming ONLY. Rule: after every placement or pickup,
+recompute blooms from scratch. Any planted seed with an orthogonal
+neighbour (up, down, left, right — NOT diagonal) of the same species
+is bloomed. A bloomed seed gets a gold ring, grows slightly bigger,
+with a small pop animation. Show a "Blooms: N" counter on the game
+screen, where N = number of bloomed seeds. Picking a seed back up
+recomputes blooms too, so neighbours that no longer match lose their
+bloom. Do NOT add plot completion, garden rows, saving, or mutations
+yet.
+Done looks like: plant two matching seeds adjacent → both bloom with
+gold ring + pop, counter goes up; pick one back up → bloom goes away,
+counter goes down.
 
 ### Step 2 — Seeds + placement
 Prompt: add a tray of 12 seed tiles. Tap a seed, then tap a cell, and the

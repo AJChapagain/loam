@@ -1,4 +1,4 @@
-# LOAM — a daily garden puzzle
+# LOAM — a daily garden game
 
 **One line:** Every morning, every player gets the same 6×6 plot. Place 12 seed
 tiles. Matching neighbours sprout, bloom, and sometimes mutate into a new

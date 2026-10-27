@@ -5,7 +5,11 @@ first, then the code.
 
 ## 1. Pitch
 
-A daily garden puzzle. Every morning every player gets the **same** plot,
+A daily garden game. Tagline: "grow a little garden, every day".
+("Puzzle" is deliberately not used — it sounds like homework. The game
+is a garden, not a test.)
+
+Every morning every player gets the **same** plot,
 grows it, and keeps a row of it forever. Calm, satisfying, two minutes,
 and a garden that visibly grows day after day.
 
@@ -116,25 +120,43 @@ Accounts, backend/database, global leaderboard, real-time multiplayer,
 chat, user-created plots, ads, app-store wrapper, monetisation of any
 kind. If a feature needs a server, it is not v1.
 
-## 11. Build order — micro-steps for Claude Free
+## 11. Build order — micro-steps for Claude Free (chat + paste workflow)
 
-The builder (Claude) is on a **free tier**: limited messages per day/hour
-and limited output per message. So the build is split into micro-steps.
+The builder (Claude) is on a **free tier** and works in **chat, not inside
+VS Code**: Claude gives code in chat, and the builder pastes it into VS
+Code by hand. That changes two things versus an integrated setup:
+
+- Claude **cannot read repo files**. Prompts must be self-contained:
+  every prompt carries the context it needs (game, step, rules). Do NOT
+  rely on "read LOAM-DESIGN.md / index.html first" — chat Claude cannot
+  see those files.
+- **Keep one Claude conversation going** for the whole build, so Claude
+  remembers the code from earlier steps. If a fresh conversation is ever
+  needed (context gets confused or slow), paste the current `index.html`
+  along with the next step's prompt so Claude is grounded again.
+
 **One step = one Claude message. Never batch steps.** After each step,
 open `index.html` in a browser, check the "Done looks like" line, then
-commit and push to GitHub before starting the next step. If a step breaks
-something, ask Claude to fix only that thing — do not re-ask for the
-whole step. If the free limit is hit, stop: all progress is safe in the
-repo, and the next step waits for the reset.
-
-Every prompt must start with: "Read LOAM-DESIGN.md and the current
-index.html first. Only change what this step asks for. Do not rewrite
-the whole file."
+refine with Claude if needed. If a step breaks something, ask Claude to
+fix only that thing — do not re-ask for the whole step. If the free
+limit is hit, stop: the work so far is safe in VS Code and (once pushed)
+in the repo, and the next step waits for the reset. Pace: slow and
+steady, piece by piece, refining each piece together before moving on.
 
 ### Step 1 — Shell + grid
 Prompt: create `index.html` with the title LOAM and an empty 6×6 grid,
 basic styling, mobile-readable.
 Done looks like: open the file, see a 6×6 grid.
+
+### Step 1b — Home screen (do this before step 2)
+Players must not land straight on a bare grid. Prompt: add a home
+screen shown first — LOAM title, tagline "grow a little garden, every
+day", one line explaining the game ("Place 12 seeds. Matching
+neighbours bloom. Your garden grows one row a day."), and a big button
+"Tend today's garden". The grid stays hidden until the button is
+tapped. Change nothing else.
+Done looks like: open the file, see the home screen first; tap the
+button, the grid appears.
 
 ### Step 2 — Seeds + placement
 Prompt: add a tray of 12 seed tiles. Tap a seed, then tap a cell, and the

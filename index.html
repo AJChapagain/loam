@@ -630,17 +630,33 @@
    @media (min-width: 700px) and (max-height: 540px) { .florist-dock { zoom: .68; } }
 
    @media (max-width: 699px) {
+     /* phones: everything stacks relative to the space — no more
+        floating HUD over the logo, no more shop panel pinned to a
+        magic pixel offset */
+     .hud {
+       position: relative; top: auto; left: auto; z-index: 4;
+       align-self: flex-start;
+       width: calc(100% - 116px); max-width: none;
+     }
+     .test { padding: 4px; }
+     .test button { min-height: 24px; font-size: 10px; padding: 0 6px; }
+     .test-label { font-size: 9px; }
+     .packet { max-width: 94vw; }
+     .packet-hint { min-width: 0; }
+     /* the shop is a bottom sheet: it sits above the bottom edge,
+        never covers the bed, and scrolls if the space is short */
      .florist-dock {
        display: none; position: fixed; z-index: 8;
-       left: 8px; top: calc(56px + env(safe-area-inset-top, 0px));
-       width: min(250px, calc(100vw - 16px)); margin: 0; padding: 0 6px;
-       max-height: calc(100dvh - 72px - env(safe-area-inset-top, 0px));
+       left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); top: auto;
+       width: auto; margin: 0; padding: 0 6px;
+       max-height: 56dvh;
        overflow-x: hidden; overflow-y: auto;
      }
      .florist-dock.open { display: block; }
      .florist-dock::after, .shop-step { display: none; }
      .shop-close { display: grid; }
-     .shop-tab { display: flex; }
+     /* the Shop tab hangs on the left edge, vertically centered on the garden */
+     .shop-tab { display: flex; top: 50%; bottom: auto; translate: 0 -50%; }
      .shop-name b { font-size: 18px; }
      .shop-logo { width: 30px; height: 30px; }
      .shop-dropzone { min-height: 62px; }
@@ -1039,11 +1055,15 @@
          drop(18, 22, 2.2) + drop(41, 20, 2) + drop(30, 12, 1.8) +
          drop(23, 37, 2.2) + drop(38, 36, 2) + drop(30, 30, 1.6) + drop(16, 72, 1.8) },
        storm: { b: '', f:
-         bolt(2, 20, 1.1, 0) + bolt(58, 18, 1, 0.3) + bolt(3, 40, 0.9, 0.6) + bolt(57, 42, 0.9, 0.45) +
-         spark(30, -4, 1, 0.2, '#fff6b8') + spark(14, 2, 0.8, 0.7, '#fff6b8') + spark(46, 2, 0.8, 0.5, '#fff6b8') },
+         bolt(30, -8, 1, 0) + bolt(6, 8, 0.9, 0.3) + bolt(54, 8, 0.9, 0.5) +
+         bolt(0, 28, 1, 0.6) + bolt(60, 28, 1, 0.2) +
+         bolt(10, 50, 0.9, 0.4) + bolt(50, 50, 0.9, 0.7) +
+         spark(30, -14, 1, 0.2, '#fff6b8') + spark(14, 2, 0.8, 0.7, '#fff6b8') + spark(46, 2, 0.8, 0.5, '#fff6b8') },
        frost: { b: '', f:
-         crystal(9, 30, 3.6, 0) + crystal(51, 30, 3.6, 0.7) + crystal(20, 7, 3, 1.2) + crystal(40, 7, 3, 0.2) +
-         crystal(14, 46, 3, 0.4) + crystal(46, 46, 3, 1.6) + crystal(38, 60, 2.6, 0.9) },
+         '<ellipse cx="30" cy="26" rx="27" ry="25" fill="rgba(220,240,255,0.30)"/>' +
+         crystal(9, 27, 3.6, 0) + crystal(51, 27, 3.6, 0.7) + crystal(20, 8, 3, 1.2) + crystal(40, 8, 3, 0.2) +
+         crystal(14, 44, 3, 0.4) + crystal(46, 44, 3, 1.6) + crystal(30, 48, 2.6, 0.9) +
+         crystal(24, 72, 2.4, 0.3) + crystal(36, 90, 2.4, 1.1) + crystal(16, 80, 2, 0.5) + crystal(44, 66, 2, 0.9) },
        golden: { b: halo('255,214,80'), f:
          spark(1, 8, 1, 0, '#fff6c2') + spark(59, 12, 0.9, 0.4, '#fff6c2') + spark(4, 54, 0.8, 0.7, '#fff6c2') +
          spark(56, 52, 1, 0.2, '#fff6c2') + spark(30, -9, 0.8, 0.55, '#fff6c2') },
@@ -1054,24 +1074,54 @@
          spark(44, -6, 0.9, 0.15, '#ffd45e') + spark(30, 55, 0.9, 0.45, '#c79bff') }
      };
 
-     // base rose: always the same classic red. Effects are layered into .fxb / .fxf
+     // The bloom is drawn bigger and rounder now, with each petal given a
+     // class so an effect can recolor the WHOLE rose (see PALETTES).
+     // .fxb = decorations behind the rose, .fxf = decorations in front.
      function roseSVG() {
        return '<svg viewBox="0 0 60 112" aria-hidden="true"><g class="fxb"></g>' +
-         '<path d="M30 108 C28 88 32 64 30 44" stroke="#3f8f2e" stroke-width="3.6" stroke-linecap="round" fill="none"/>' +
-         '<path d="M29.5 88 C15 88 7 78 7 67 C20 67 29 75 29.5 88 Z" fill="#5cb23f"/>' +
+         '<path class="st" d="M30 108 C28 88 32 64 30 44" stroke="#3f8f2e" stroke-width="3.6" stroke-linecap="round" fill="none"/>' +
+         '<path class="lf" d="M29.5 88 C15 88 7 78 7 67 C20 67 29 75 29.5 88 Z" fill="#5cb23f"/>' +
          '<path d="M29.5 86 C22 82 15 76 11 70" stroke="#3f8f2e" stroke-width="1" fill="none" opacity="0.6"/>' +
-         '<path d="M30.5 72 C45 72 53 62 53 51 C40 51 31 59 30.5 72 Z" fill="#4fa335"/>' +
+         '<path class="lf2" d="M30.5 72 C45 72 53 62 53 51 C40 51 31 59 30.5 72 Z" fill="#4fa335"/>' +
          '<path d="M30.5 70 C38 66 45 60 49 54" stroke="#3a7f29" stroke-width="1" fill="none" opacity="0.6"/>' +
          '<ellipse cx="30" cy="109" rx="14" ry="3.5" fill="#cf975c"/>' +
-         '<path d="M21 40 L30 49 L39 40 L34 44.5 L30 42 L26 44.5 Z" fill="#3f8f2e"/>' +
-         '<ellipse cx="20.5" cy="30" rx="11" ry="12" fill="#b3174f"/>' +
-         '<ellipse cx="39.5" cy="30" rx="11" ry="12" fill="#b3174f"/>' +
-         '<ellipse cx="30" cy="21" rx="12" ry="11" fill="#d81b60"/>' +
-         '<path d="M15 30 C15 46 45 46 45 30 C45 24 15 24 15 30 Z" fill="#d81b60"/>' +
-         '<circle cx="30" cy="27" r="8.5" fill="#e63b78"/>' +
-         '<path d="M25 28 C25 21 35 21 35 28 C35 32 28 32 28 28 C28 25.5 32 25.5 32 28" stroke="#a3104a" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
-         '<ellipse cx="23.5" cy="21" rx="4.5" ry="2.6" fill="#f48fb1" opacity="0.7"/>' +
+         '<path class="lf" d="M21 40 L30 49 L39 40 L34 44.5 L30 42 L26 44.5 Z" fill="#3f8f2e"/>' +
+         '<ellipse class="pt-l" cx="17" cy="27" rx="12" ry="13" fill="#b3174f"/>' +
+         '<ellipse class="pt-r" cx="43" cy="27" rx="12" ry="13" fill="#b3174f"/>' +
+         '<ellipse class="pt-t" cx="30" cy="15" rx="12" ry="11" fill="#d81b60"/>' +
+         '<path class="pt-b" d="M13 27 C13 45 47 45 47 27 C47 21 13 21 13 27 Z" fill="#d81b60"/>' +
+         '<circle class="pt-c" cx="30" cy="26" r="9" fill="#e63b78"/>' +
+         '<path class="pt-sp" d="M25 27 C25 20 35 20 35 27 C35 31 28 31 28 27 C28 24.5 32 24.5 32 27" stroke="#a3104a" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
+         '<ellipse class="pt-hi" cx="24" cy="18" rx="5" ry="3" fill="#f48fb1" opacity="0.7"/>' +
          '<g class="fxf"></g></svg>';
+     }
+
+     // ---------- Rose palettes: an effect recolors the WHOLE rose ----------
+     // The newest effect landed sets the petal colors; a Rainbow rose
+     // (all five) gets a rainbow petal set. All effects' decorations
+     // still layer on top, so stacking stays visible.
+     var PALETTES = {
+       classic: { l: '#b3174f', r: '#b3174f', t: '#d81b60', b: '#d81b60', c: '#e63b78', hi: '#f48fb1', sp: '#a3104a', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' },
+       rain:    { l: '#9e1445', r: '#9e1445', t: '#c2185b', b: '#c2185b', c: '#e0407c', hi: '#f8bbd0', sp: '#7d0f38', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' },
+       storm:   { l: '#6d28a8', r: '#6d28a8', t: '#8b3dc8', b: '#8b3dc8', c: '#b06ee8', hi: '#e6c2f5', sp: '#551d85', lf: '#4a8f3a', lf2: '#3f7a30', st: '#3a7f29' },
+       frost:   { l: '#8fc3e8', r: '#8fc3e8', t: '#bfe3f7', b: '#bfe3f7', c: '#e8f6ff', hi: '#ffffff', sp: '#6fa3c9', lf: '#a8d5c2', lf2: '#8fb8a0', st: '#7fae8e' },
+       golden:  { l: '#d99a16', r: '#d99a16', t: '#f2c94c', b: '#f2c94c', c: '#ffd863', hi: '#fff3b0', sp: '#b57f14', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' },
+       ember:   { l: '#d63a0a', r: '#d63a0a', t: '#ff5a14', b: '#ff5a14', c: '#ff8c1a', hi: '#ffc46b', sp: '#a82e08', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' },
+       rainbow: { l: '#ff4d4d', r: '#ff9b3d', t: '#ffe14d', b: '#4fd66a', c: '#4aa8ff', hi: '#e0c8ff', sp: '#a066ff', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' }
+     };
+     function paletteFor(fx) {
+       if (isRainbow(fx)) return PALETTES.rainbow;
+       if (fx.length) return PALETTES[fx[fx.length - 1]];
+       return PALETTES.classic;
+     }
+     function paintRose(svg, fx) {
+       var pal = paletteFor(fx);
+       function set(cls, val, attr) {
+         Array.prototype.forEach.call(svg.querySelectorAll('.' + cls), function (el) { el.setAttribute(attr || 'fill', val); });
+       }
+       set('pt-l', pal.l); set('pt-r', pal.r); set('pt-t', pal.t); set('pt-b', pal.b);
+       set('pt-c', pal.c); set('pt-hi', pal.hi); set('pt-sp', pal.sp, 'stroke');
+       set('lf', pal.lf); set('lf2', pal.lf2); set('st', pal.st, 'stroke');
      }
 
      function addLayer(svg, key, pop, preview) {
@@ -1106,6 +1156,7 @@
        Object.keys(want).forEach(function (k) {
          if (!svg.querySelector('[data-fx="' + k + '"]')) addLayer(svg, k, pop, want[k] === 1);
        });
+       paintRose(svg, p.effects);   // newest effect recolors the whole rose
        if (want.storm !== undefined) el.dataset.look = 'storm';
        else if (want.ember !== undefined) el.dataset.look = 'ember';
        else el.removeAttribute('data-look');

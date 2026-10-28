@@ -1,14 +1,16 @@
 # LOAM — Game Worksheet (everything, to a T)
 
-Living notes for LOAM. Updated 2026-10-27 night. Also on GitHub:
+Living notes for LOAM. Updated 2026-10-28 night. Also on GitHub:
 AJChapagain/loam, `LOAM-WORKSHEET.md` (public repo). Code state: title
 screen + garden screen, planting, growth, saving, stacking weather
 effects, animated weather, come-back message, coins, Loam Florist
-storefront (left side, grounded), drag-to-sell, sway animations, TEST
-buttons, visible save system (Saved flash + export/import codes).
-`index.html` now lives IN the loam repo too (pushed by buddy 2026-10-27
-night, with his fixes — see below). Still no daily claim, extra species,
-pick-up, or friends yet.
+storefront (left side, grounded; bottom sheet on phones), drag-to-sell,
+sway animations, TEST buttons, visible save system (Saved flash +
+export/import codes). `index.html` lives IN the loam repo (pushed by
+buddy, with his fixes). Rose redesigned 2026-10-28: bigger rounder bloom,
+effects recolor the WHOLE rose (newest effect wins the petals, all
+decorations still stack). Still no daily claim, extra species, pick-up,
+or friends yet.
 
 ## The game in one line
 
@@ -124,11 +126,31 @@ sell them later for coins, buy more seeds. One file: `index.html`.
   bloom here to sell"). BUT hovering a grown rose DOES show its effects
   + what it is worth (he reversed the earlier no-value tooltip). The sale
   itself still reveals the amount (coin pop + sold toast).
-- **Shop on the left (built 2026-10-27 night):** on wide screens the shop
-  stands on the grass to the LEFT of the bed, both grounded on the same
-  grass line. On phones it becomes a small "Shop" button on the left edge
-  that opens the storefront as a panel (dragging a rose onto the button
-  sells it).
+- **The rose itself (redesigned 2026-10-28, buddy direct fix):** bigger,
+  rounder bloom — overlapping round petals (left, right, top, cup,
+  center) with a spiral middle and a highlight, on a stem with two
+  leaves. The old small bloom read as weird/squat; this one reads as a
+  rose.
+- **Effects recolor the WHOLE rose (2026-10-28, replaces the old
+  "decorations only, never recolor" rule):** each effect has a full
+  petal palette, and the NEWEST effect landed sets the rose's colors —
+  Frost turns the whole rose icy pale blue/white (plus a frosty veil
+  over the bloom and crystals on the bloom, stem, AND leaves — ice gets
+  the whole thing, including frosted leaves/stem); Storm turns petals
+  electric violet with lightning bolts all AROUND the bloom (top,
+  sides, bottom); Golden turns petals gold; Ember turns petals fiery;
+  Rain turns petals a deeper wet rose. A Rainbow rose (all five) gets
+  rainbow petals (red, orange, yellow, green, blue, purple). All
+  effects' decorations still layer together, so stacking stays visible
+  even though the newest effect owns the colors.
+- **Phone layout (fixed 2026-10-28):** everything now stacks relative
+  to the space. The weather/coins/save badges sit in the normal flow
+  (no more floating HUD overlapping the logo); the shop panel is a
+  bottom sheet (sits above the bottom edge, never covers the bed,
+  scrolls if the space is short); the Shop tab hangs on the left edge
+  vertically centered on the garden; the seed packet shrinks instead of
+  overflowing; TEST buttons shrink on phones. Desktop layout unchanged
+  (it already looked right).
 - **Visible save system (built 2026-10-27 night):** auto-save already
   exists (localStorage `loam.save.v2`) but the player couldn't tell.
   Added: a "Saved ✓" flash on every save + a Save button (near the coins
@@ -220,6 +242,12 @@ tooltip now shows effects + worth, values MULTIPLICATIVE (Rainbow =
 4500), left-side grounded shop + Save panel (Saved flash + export/import
 codes) all in the code. `index.html` PUSHED to AJChapagain/loam by buddy
 same night.
+
+Rose redesign + phone layout: DONE 2026-10-28 night (buddy direct fix) —
+bigger rounder bloom, effect palettes recolor the whole rose (newest
+effect wins colors; frost ices bloom + stem + leaves; lightning bolts
+encircle; rainbow petals), phone HUD in flow + shop bottom sheet + Shop
+tab vertically centered. Pushed to AJChapagain/loam same night.
 
 1. Daily free seed claim (1/day, can't double-claim).
 2. More flower species (daisy, lavender, orchid, ...).

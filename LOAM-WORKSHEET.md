@@ -2,15 +2,15 @@
 
 Living notes for LOAM. Updated 2026-10-28 night. Also on GitHub:
 AJChapagain/loam, `LOAM-WORKSHEET.md` (public repo). Code state: title
-screen + garden screen, planting, growth, saving, stacking weather
-effects, animated weather, come-back message, coins, Loam Florist
-storefront (left side, grounded; bottom sheet on phones), drag-to-sell,
-sway animations, TEST buttons, visible save system (Saved flash +
-export/import codes). `index.html` lives IN the loam repo (pushed by
-buddy, with his fixes). Rose redesigned 2026-10-28: bigger rounder bloom,
-effects recolor the WHOLE rose (newest effect wins the petals, all
-decorations still stack). Still no daily claim, extra species, pick-up,
-or friends yet.
+screen + garden screen, planting, growth (a day: sprout 12h, bloom 24h),
+saving, stacking weather effects, animated weather, come-back message,
+coins, Loam Florist storefront (left side, grounded; bottom sheet on
+phones; compact rows), drag-to-sell (the plant itself drags now, no
+emoji ghost), sway animations, TEST buttons, visible save system (Saved
+flash + export/import codes). 5 species: Rose, Sunflower, Lavender,
+Orchid, Moonflower — rose always in the shop, the other four rotate one
+featured seed per day. `index.html` lives IN the loam repo (pushed by
+buddy, with his fixes). Still no daily claim, pick-up, or friends yet.
 
 ## The game in one line
 
@@ -56,24 +56,48 @@ sell them later for coins, buy more seeds. One file: `index.html`.
 - One plant per mound. Empty mounds get a dashed white ring while a seed is
   selected.
 
-## Seeds & planting
+## Species (5 plants since 2026-10-28 — buddy's picks, a ladder)
 
-- Start: exactly **1 rose seed**.
-- Packet UI: round seed slot with a tiny rose-seed drawing, count badge,
-  hint text ("Rose seed: tap to select" → "Now tap a soil mound" →
-  "Packet empty"). Selected seed glows gold and lifts.
-- Tap seed → tap empty mound → planted. Planted seed shows as a small seed
-  sitting in the soil on that mound.
+Each seed grows into a visibly different plant (own bloom art, own classic
+colors). Every plant uses the same petal classes, so weather palettes
+recolor any species, and values multiply the same way (base × effect
+multipliers). Old saves migrate: plants without a species become roses;
+old single-number seed counts become rose-only counts.
 
-## Growth (testing times — lengthen later)
+| Seed | Shop price | Classic value | Look |
+|---|---|---|---|
+| Rose | 10 | 20 | red round bloom (the starter) |
+| Sunflower | 25 | 50 | big yellow bloom, brown center |
+| Lavender | 40 | 90 | purple spike |
+| Orchid | 75 | 180 | pink exotic bloom, arching stem |
+| Moonflower | 120 | 300 | white glowing bloom |
 
-- 3 stages: **seed → sprout → full rose** (stem, leaves, flower head, drawn
-  growing out of its mound, with a grow/pop animation on stage change).
-- `SEED_MS` = 1 minute (seed stage), `SPROUT_MS` = 3 minutes (full rose after).
-- Re-checked every 10 seconds (`CHECK_MS`) + on visibility change, so plants
-  grow while the page is open and catch up on return.
-- Real times (hours / a day) come later — the constants sit at the top of the
-  file for tuning.
+- **Daily rotation:** the rose is always in the shop. Each day ONE of the
+  four new seeds is featured (same for every player, picked from the
+  date: `hashDay('shop-' + date) % 4`). The other three show greyed with
+  when they come back ("Back tomorrow" / "Back Fri"). Seeds you already
+  own stay in your packet no matter the rotation — rotation only gates
+  buying, never planting.
+- The packet holds one slot per species (compact 40px slots with count
+  badges); tap a slot to select it, tap a mound to plant. Empty slots are
+  dashed and can't be selected.
+- **Drag = the plant itself (since 2026-10-28):** dragging lifts the real
+  plant element off its mound and it follows the pointer (tilted, with a
+  shadow). No more 🌹/🌈 emoji ghost. Dropping outside the shop puts the
+  plant back on its mound; dropping on the shop sells it. The 10-second
+  re-check skips a plant mid-drag so it can't crash.
+
+## Growth (REAL times since 2026-10-28 — a day to grow)
+
+- 3 stages: **seed → sprout → full bloom**.
+- `SEED_MS` = 12 hours (seed stage), `SPROUT_MS` = 24 hours (full bloom
+  after a day). Plant today, sprout tonight/tomorrow, bloom tomorrow.
+- Re-checked every 10 seconds (`CHECK_MS`) + on visibility change, so
+  plants grow while the page is open and catch up on return.
+- TEST buttons (Next stage / Full bloom) still jump stages instantly for
+  testing — they are testing-only and get removed before public release.
+- Weather effects only land on FULLY GROWN plants, on later days — a
+  plant that blooms tomorrow starts rolling for effects the day after.
 
 ## Weather (one per day, same for every player)
 
@@ -249,21 +273,28 @@ effect wins colors; frost ices bloom + stem + leaves; lightning bolts
 encircle; rainbow petals), phone HUD in flow + shop bottom sheet + Shop
 tab vertically centered. Pushed to AJChapagain/loam same night.
 
+5 species + daily rotation + compact shop + drag-the-plant-itself +
+day-long growth: DONE 2026-10-28 night (buddy direct fix) — Sunflower /
+Lavender / Orchid / Moonflower join the Rose (ladder 10→120 seed price,
+20→300 classic value); one new seed featured per day in the shop, others
+greyed with return day; drag lifts the real plant (no emoji ghost);
+growth is now 12h sprout / 24h bloom. Pushed to AJChapagain/loam same
+night.
+
 1. Daily free seed claim (1/day, can't double-claim).
-2. More flower species (daisy, lavender, orchid, ...).
-3. Picking plants back up (later, if wanted).
-4. Friends — UNDECIDED, parked (see below).
-5. Real growth times (hours / a day) + polish pass (sway, bed details).
-6. Publish online (GitHub Pages) for real phone testing.
-7. Mobile decision (after online works).
-8. TEST buttons removed before any public release (they're testing-only).
+2. Picking plants back up (later, if wanted).
+3. Friends — UNDECIDED, parked (see below).
+4. Polish pass (sway, bed details).
+5. Publish online (GitHub Pages) for real phone testing.
+6. Mobile decision (after online works).
+7. TEST buttons removed before any public release (they're testing-only).
 
 ## Ideas (parked here until he says build it)
 
 - Friends: add a friend, see their garden, maybe trade — UNDECIDED, needs
   the share-code vs backend decision first (see Friends section).
-- More species: daisy, lavender, orchid named so far — no stats, prices, or
-  looks decided yet.
+- More species: daisy was named but is NOT built yet — lavender, orchid,
+  sunflower, and moonflower shipped 2026-10-28.
 - Picking plants back up: reclaim a growing plant as a seed — wanted at
   some point, no design yet.
 - Garden polish: swaying plants, extra bed details — after the loop works.
@@ -275,13 +306,16 @@ tab vertically centered. Pushed to AJChapagain/loam same night.
 - Coins: start 50, pill next to the weather badge, saved in `loam.save.v2`
   (old saves without coins default to 50). Seed price 10, sell values as
   locked above. Buy works (deducts 10, +1 seed, toast, saves).
-- Selling = DRAG a grown rose into the shop (his choice — kept over the
+- Selling = DRAG a grown plant into the shop (his choice — kept over the
   sell-bar idea). Shop is now the "Loam Florist" storefront: sign with
-  rose logo, red/cream awning, seed window with shelf, door dropzone with
-  OPEN sign, coin pop + shop shake on sale. The dropzone shows only
-  "Drag a bloom here to sell" — no price preview. The "We pay" board was
-  REMOVED 2026-10-27 night (his call); hovering a grown rose shows its
-  effects + worth instead.
+  rose logo, red/cream awning, seed window with compact rows (one per
+  species: icon + name + price + Buy, or greyed with its return day),
+  door dropzone with OPEN sign, coin pop + shop shake on sale. The
+  dropzone shows only "Drag a bloom here to sell" — no price preview.
+  The "We pay" board was REMOVED 2026-10-27 night (his call); hovering
+  a grown plant shows its effects + worth instead. The shop was made
+  SMALLER 2026-10-28 (narrower dock, smaller sign/logo/awning, compact
+  rows, shorter door) so the 5 seed rows fit beside the bed.
 - Extra life added in the storefront pass: roses sway (storm sways
   harder, ember sways warm), shimmer crystals, dripping rain droplets,
   twinkling halos. The `*background*` typo was fixed in that pass.

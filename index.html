@@ -184,7 +184,7 @@
 
    /* ---------- Seed packet ---------- */
    .packet {
-     display: flex; align-items: center; gap: 10px;
+     display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
      padding: 7px 14px 7px 12px;
      border-radius: 14px;
      background: #fff4d9;
@@ -194,10 +194,11 @@
    }
    .packet-title { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.2; }
    .packet-hint  { font-size: 12px; opacity: 0.85; min-width: 120px; }
+   .packet-slots { display: flex; gap: 6px; }
 
    .seed-slot {
      position: relative;
-     width: 50px; height: 50px; padding: 0;
+     width: 40px; height: 40px; padding: 0;
      border: 2px solid #d9b777; border-radius: 50%;
      background: #fffaf0;
      cursor: pointer;
@@ -205,7 +206,7 @@
      transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
      -webkit-tap-highlight-color: transparent;
    }
-   .seed-slot svg { width: 26px; height: 26px; display: block; }
+   .seed-slot svg { width: 22px; height: 22px; display: block; }
    .seed-slot:focus-visible { outline: 3px solid #4a2f1b; outline-offset: 2px; }
    .seed-slot[aria-pressed="true"] {
      background: #fff0b8;
@@ -217,9 +218,9 @@
    .seed-slot.empty svg { opacity: 0.3; filter: grayscale(1); }
    .seed-count {
      position: absolute; top: -6px; right: -6px;
-     min-width: 20px; height: 20px; padding: 0 5px;
-     border-radius: 10px; background: #6b4423; color: #fff8e4;
-     font-size: 12px; line-height: 20px; text-align: center;
+     min-width: 18px; height: 18px; padding: 0 4px;
+     border-radius: 9px; background: #6b4423; color: #fff8e4;
+     font-size: 11px; line-height: 18px; text-align: center;
    }
 
    .planting .mound:not(.has-plant) { cursor: pointer; }
@@ -440,7 +441,7 @@
    /* ---------- STOREFRONT (stands on the grass, left of the bed) ---------- */
    .florist-dock {
      position: relative; flex: none; z-index: 5;
-     width: clamp(170px, 19vw, 215px);
+     width: clamp(160px, 18vw, 200px);
      margin-bottom: 14px;
      color: #5a3818;
      transform-origin: 50% 100%;
@@ -465,9 +466,9 @@
      color: #fff0c8;
      box-shadow: inset 0 2px 0 rgba(255,255,255,.12);
    }
-   .shop-logo { width: 36px; height: 36px; flex: none; }
+   .shop-logo { width: 30px; height: 30px; flex: none; }
    .shop-name { display: flex; flex-direction: column; gap: 3px; }
-   .shop-name b { font: 800 21px/1 'Fraunces', Georgia, serif; letter-spacing: .05em; text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+   .shop-name b { font: 800 18px/1 'Fraunces', Georgia, serif; letter-spacing: .05em; text-shadow: 0 2px 0 rgba(0,0,0,.35); }
    .shop-name span { font-size: 8.5px; letter-spacing: .34em; color: #f2c76b; font-weight: 700; }
    .shop-close {
      display: none; margin-left: auto; flex: none; width: 28px; height: 28px; padding: 0;
@@ -476,11 +477,11 @@
    }
    .shop-close:active { transform: translateY(1px); }
 
-   .awning { display: block; width: calc(100% + 10px); height: 26px; margin: -1px -5px -13px; position: relative; z-index: 2; filter: drop-shadow(0 3px 0 rgba(0,0,0,.2)); }
+   .awning { display: block; width: calc(100% + 10px); height: 22px; margin: -1px -5px -11px; position: relative; z-index: 2; filter: drop-shadow(0 3px 0 rgba(0,0,0,.2)); }
 
    .shop-front {
      position: relative;
-     padding: 21px 9px 10px;
+     padding: 16px 8px 8px;
      background: linear-gradient(#f9ebc8, #f0d9a2);
      border: 3px solid #35200d; border-top: 0; border-radius: 0 0 10px 10px;
    }
@@ -491,31 +492,34 @@
    }
 
    .shop-window {
-     padding: 7px 7px 0;
+     padding: 6px 6px 2px;
      border: 3px solid #8a5a2e; border-radius: 8px;
      background: linear-gradient(#cfeaf6, #eaf8fc);
      box-shadow: inset 0 0 0 2px rgba(255,255,255,.65), inset 8px 0 14px -8px rgba(255,255,255,.9);
    }
-   .shop-window-label { font-size: 9px; letter-spacing: .22em; font-weight: 700; color: #4e7e95; text-align: center; margin-bottom: 5px; }
-   .shelf-item { display: flex; align-items: center; gap: 7px; padding-bottom: 7px; }
+   .shop-window-label { font-size: 9px; letter-spacing: .22em; font-weight: 700; color: #4e7e95; text-align: center; margin-bottom: 4px; }
+   .shelf-item { display: flex; align-items: center; gap: 6px; padding: 5px 0; border-bottom: 1px dashed rgba(138,90,46,.35); }
+   .shelf-item:last-child { border-bottom: 0; }
    .shelf-icon {
-     width: 38px; height: 38px; flex: none; display: grid; place-items: center;
+     width: 30px; height: 30px; flex: none; display: grid; place-items: center;
      border-radius: 50%; background: #fffaf0; border: 2px solid #d9b777;
    }
-   .shelf-icon svg { width: 22px; height: 22px; display: block; }
-   .shelf-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+   .shelf-icon svg { width: 20px; height: 20px; display: block; }
+   .shelf-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
    .shelf-copy strong { font-size: 12px; line-height: 1.1; }
    .price-tag {
      align-self: flex-start; font-size: 11px; font-weight: 700; color: #6b3f00;
      background: #ffe08a; border: 1.5px solid #d9a21b; border-radius: 5px; padding: 1px 6px;
    }
-   .shelf-board { height: 7px; margin: 0 -7px; background: linear-gradient(#c68f55, #a8793b); border-top: 2px solid #8a5a2e; }
-   .shelf-buy { display: flex; justify-content: flex-end; padding: 7px 0 7px; }
-   .shelf-buy .action-btn { padding: 7px 16px; font-size: 12px; }
+   .back-text { font-size: 10px; font-style: italic; color: #8a6a42; }
+   .today-tag { font-size: 9px; font-weight: 700; background: #2f8f4a; color: #eaffef; border-radius: 4px; padding: 1px 5px; margin-left: 4px; vertical-align: middle; }
+   .mini-buy { padding: 6px 12px; font-size: 11px; }
+   .shelf-item.unavail { opacity: .55; }
+   .shelf-item.unavail .shelf-icon { filter: grayscale(1); opacity: .6; }
 
-   .shop-door-row { display: flex; align-items: stretch; gap: 7px; margin-top: 9px; }
+   .shop-door-row { display: flex; align-items: stretch; gap: 7px; margin-top: 8px; }
    .shop-dropzone {
-     flex: 1; min-height: 78px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+     flex: 1; min-height: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
      padding: 18px 6px 6px; position: relative;
      border: 3px solid #8a5a2e; border-radius: 40px 40px 6px 6px / 28px 28px 6px 6px;
      background: linear-gradient(#a8703a, #8d5a2a);
@@ -577,7 +581,7 @@
    .rose-tooltip.show { display: block; }
    .rose-tooltip strong { display: block; margin-bottom: 4px; font: 800 17px/1.15 'Fraunces', Georgia, serif; }
    .rose-tooltip .tip-story { margin-top: 6px; padding-top: 6px; border-top: 1px solid #ead7b2; }
-   .drag-ghost { position: fixed; z-index: 30; pointer-events: none; font-size: 42px; filter: drop-shadow(0 4px 3px rgba(50,30,10,.3)); transform: translate(-50%,-55%) rotate(-9deg); }
+   .plant.dragging-plant { filter: drop-shadow(0 6px 4px rgba(50,30,10,.35)); }
    .mound.rose-draggable { cursor: grab; touch-action: none; }
    .mound.rose-draggable:active { cursor: grabbing; }
    .mound.dragging-rose { opacity: .48; }
@@ -713,25 +717,16 @@
      </div>
 
      <div class="packet" aria-label="Your seeds">
-       <div>
-         <div class="packet-title">Your<br>Seeds</div>
-       </div>
-       <button class="seed-slot" id="roseSlot" type="button" aria-pressed="false" aria-label="Rose seed">
-         <svg viewBox="0 0 40 40" aria-hidden="true">
-           <ellipse cx="20" cy="22" rx="11" ry="15" fill="#b5483a" transform="rotate(25 20 22)"/>
-           <ellipse cx="20" cy="22" rx="11" ry="15" fill="none" stroke="#7d2a22" stroke-width="2" transform="rotate(25 20 22)"/>
-           <ellipse cx="16" cy="15" rx="3" ry="5.5" fill="#e8897b" opacity="0.75" transform="rotate(25 16 15)"/>
-         </svg>
-         <span class="seed-count" id="seedCount">1</span>
-       </button>
-       <div class="packet-hint" id="packetHint" aria-live="polite">Rose seed: tap to select</div>
+       <div class="packet-title">Your Seeds</div>
+       <div class="packet-slots" id="packetSlots"></div>
+       <div class="packet-hint" id="packetHint" aria-live="polite">Tap a seed, then a mound</div>
      </div>
 
      <!-- The shop and the bed stand on the same grass line -->
      <div class="stage" id="stage">
 
        <!-- STOREFRONT -->
-       <aside class="florist-dock" id="floristDock" aria-label="Loam Florist: buy seeds or sell roses">
+       <aside class="florist-dock" id="floristDock" aria-label="Loam Florist: buy seeds or sell plants">
          <div class="shop-sign">
            <svg class="shop-logo" viewBox="0 0 48 48" aria-hidden="true">
              <circle cx="24" cy="24" r="22" fill="#fff4d9" stroke="#d9b777" stroke-width="2.5"/>
@@ -758,22 +753,8 @@
          <div class="shop-front">
            <div class="shop-window">
              <div class="shop-window-label">SEEDS</div>
-             <div class="shelf-item">
-               <div class="shelf-icon">
-                 <svg viewBox="0 0 40 40" aria-hidden="true">
-                   <ellipse cx="20" cy="22" rx="11" ry="15" fill="#b5483a" transform="rotate(25 20 22)"/>
-                   <ellipse cx="20" cy="22" rx="11" ry="15" fill="none" stroke="#7d2a22" stroke-width="2" transform="rotate(25 20 22)"/>
-                   <ellipse cx="16" cy="15" rx="3" ry="5.5" fill="#e8897b" opacity="0.75" transform="rotate(25 16 15)"/>
-                 </svg>
-               </div>
-               <div class="shelf-copy">
-                 <strong>Rose seed</strong>
-                 <span class="price-tag">🪙 10</span>
-               </div>
-             </div>
-             <div class="shelf-board"></div>
+             <div id="shopShelf"></div>
            </div>
-           <div class="shelf-buy"><button class="action-btn" id="buySeedBtn" type="button">Buy</button></div>
            <div class="shop-door-row">
              <div class="shop-dropzone" id="shopDropzone">
                <span class="open-sign">OPEN</span>
@@ -817,7 +798,6 @@
    </section>
 
    <div class="rose-tooltip" id="roseTooltip" role="status"></div>
-   <div class="drag-ghost" id="dragGhost" aria-hidden="true" style="display:none">🌹</div>
 
    <div class="fx" id="fx" aria-hidden="true"></div>
 
@@ -860,9 +840,10 @@
    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
    <script>
-     // ---------- Growth timing (TESTING values: lengthen later to hours / a day) ----------
-     var SEED_MS   = 1 * 60 * 1000;
-     var SPROUT_MS = 3 * 60 * 1000;
+     // ---------- Growth timing: a plant takes a day to grow ----------
+     // sprout after 12 hours, full bloom after 24 hours
+     var SEED_MS   = 12 * 60 * 60 * 1000;
+     var SPROUT_MS = 24 * 60 * 60 * 1000;
      var CHECK_MS  = 10 * 1000;
 
      var SAVE_KEY = 'loam.save.v2';
@@ -900,19 +881,19 @@
        golden: { label: 'Golden',           mult: 5 }
      };
      var EFFECT_KEYS = ['rain', 'storm', 'frost', 'ember', 'golden'];
-     var BASE_VALUE = 20;
 
      function isRainbow(fx) { return fx.length >= EFFECT_KEYS.length; }
      // one number for the whole game: selling, the tooltip, and the shop reveal all use this
-     function roseValue(fx) {
-       var v = BASE_VALUE;
+     function plantValue(speciesKey, fx) {
+       var v = SPECIES[speciesKey].base;
        fx.forEach(function (k) { v *= EFFECTS[k].mult; });
        return Math.round(v);
      }
-     function roseName(fx) {
-       if (isRainbow(fx)) return 'Rainbow rose';
-       if (!fx.length) return 'Classic rose';
-       return fx.map(function (k) { return EFFECTS[k].label; }).join(' ') + ' rose';
+     function plantName(speciesKey, fx) {
+       var name = SPECIES[speciesKey].name;
+       if (isRainbow(fx)) return 'Rainbow ' + name;
+       if (!fx.length) return 'Classic ' + name;
+       return fx.map(function (k) { return EFFECTS[k].label; }).join(' ') + ' ' + name;
      }
 
      function hashDay(str) {
@@ -1101,7 +1082,6 @@
      // (all five) gets a rainbow petal set. All effects' decorations
      // still layer on top, so stacking stays visible.
      var PALETTES = {
-       classic: { l: '#b3174f', r: '#b3174f', t: '#d81b60', b: '#d81b60', c: '#e63b78', hi: '#f48fb1', sp: '#a3104a', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' },
        rain:    { l: '#9e1445', r: '#9e1445', t: '#c2185b', b: '#c2185b', c: '#e0407c', hi: '#f8bbd0', sp: '#7d0f38', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' },
        storm:   { l: '#6d28a8', r: '#6d28a8', t: '#8b3dc8', b: '#8b3dc8', c: '#b06ee8', hi: '#e6c2f5', sp: '#551d85', lf: '#4a8f3a', lf2: '#3f7a30', st: '#3a7f29' },
        frost:   { l: '#8fc3e8', r: '#8fc3e8', t: '#bfe3f7', b: '#bfe3f7', c: '#e8f6ff', hi: '#ffffff', sp: '#6fa3c9', lf: '#a8d5c2', lf2: '#8fb8a0', st: '#7fae8e' },
@@ -1109,19 +1089,124 @@
        ember:   { l: '#d63a0a', r: '#d63a0a', t: '#ff5a14', b: '#ff5a14', c: '#ff8c1a', hi: '#ffc46b', sp: '#a82e08', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' },
        rainbow: { l: '#ff4d4d', r: '#ff9b3d', t: '#ffe14d', b: '#4fd66a', c: '#4aa8ff', hi: '#e0c8ff', sp: '#a066ff', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' }
      };
-     function paletteFor(fx) {
+     function paletteFor(speciesKey, fx) {
        if (isRainbow(fx)) return PALETTES.rainbow;
        if (fx.length) return PALETTES[fx[fx.length - 1]];
-       return PALETTES.classic;
+       return SPECIES[speciesKey].classic;
      }
-     function paintRose(svg, fx) {
-       var pal = paletteFor(fx);
+     function paintRose(svg, speciesKey, fx) {
+       var pal = paletteFor(speciesKey, fx);
        function set(cls, val, attr) {
          Array.prototype.forEach.call(svg.querySelectorAll('.' + cls), function (el) { el.setAttribute(attr || 'fill', val); });
        }
        set('pt-l', pal.l); set('pt-r', pal.r); set('pt-t', pal.t); set('pt-b', pal.b);
        set('pt-c', pal.c); set('pt-hi', pal.hi); set('pt-sp', pal.sp, 'stroke');
        set('lf', pal.lf); set('lf2', pal.lf2); set('st', pal.st, 'stroke');
+     }
+
+     // ---------- Species: 5 plants, each a step up from the last ----------
+     // The rose is always in the shop. The other four ROTATE: one featured
+     // seed per day (same for every player, picked from the date), so a
+     // seed you miss comes back around. Every plant uses the same petal
+     // classes, so weather palettes recolor any species.
+     var SPECIES = {
+       rose: {
+         name: 'Rose', seedPrice: 10, base: 20,
+         classic: { l: '#b3174f', r: '#b3174f', t: '#d81b60', b: '#d81b60', c: '#e63b78', hi: '#f48fb1', sp: '#a3104a', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' },
+         icon: '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="14" cy="20" r="8" fill="#b3174f"/><circle cx="26" cy="20" r="8" fill="#b3174f"/><circle cx="20" cy="13" r="8" fill="#d81b60"/><circle cx="20" cy="19" r="4.5" fill="#e63b78"/></svg>',
+         art: roseSVG
+       },
+       sunflower: {
+         name: 'Sunflower', seedPrice: 25, base: 50,
+         classic: { l: '#e8a812', r: '#e8a812', t: '#f2c94c', b: '#f2c94c', c: '#7a4a21', hi: '#fff3b0', sp: '#5a3a15', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' },
+         icon: '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="5" r="3.5" fill="#f2c94c"/><circle cx="35" cy="20" r="3.5" fill="#f2c94c"/><circle cx="20" cy="35" r="3.5" fill="#f2c94c"/><circle cx="5" cy="20" r="3.5" fill="#f2c94c"/><circle cx="20" cy="20" r="13" fill="#f2c94c"/><circle cx="20" cy="20" r="6" fill="#7a4a21"/></svg>',
+         art: sunflowerSVG
+       },
+       lavender: {
+         name: 'Lavender', seedPrice: 40, base: 90,
+         classic: { l: '#8b5fbf', r: '#8b5fbf', t: '#a066ff', b: '#a066ff', c: '#c9a8ff', hi: '#e6d9ff', sp: '#6d4aa8', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' },
+         icon: '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 36 L20 12" stroke="#3f8f2e" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="20" cy="8" r="4" fill="#a066ff"/><circle cx="20" cy="15" r="4.5" fill="#8b5fbf"/><circle cx="20" cy="22" r="4.5" fill="#a066ff"/><circle cx="20" cy="29" r="4" fill="#8b5fbf"/></svg>',
+         art: lavenderSVG
+       },
+       orchid: {
+         name: 'Orchid', seedPrice: 75, base: 180,
+         classic: { l: '#e85aa0', r: '#e85aa0', t: '#f27bb5', b: '#c93a8e', c: '#fff0a0', hi: '#ffd0e8', sp: '#a82e6e', lf: '#4fa335', lf2: '#5cb23f', st: '#3f8f2e' },
+         icon: '<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="10" rx="6" ry="8" fill="#f27bb5"/><ellipse cx="10" cy="20" rx="8" ry="6" fill="#e85aa0"/><ellipse cx="30" cy="20" rx="8" ry="6" fill="#e85aa0"/><ellipse cx="13" cy="30" rx="7" ry="6" fill="#e85aa0"/><ellipse cx="27" cy="30" rx="7" ry="6" fill="#e85aa0"/><circle cx="20" cy="20" r="4" fill="#fff0a0"/></svg>',
+         art: orchidSVG
+       },
+       moonflower: {
+         name: 'Moonflower', seedPrice: 120, base: 300,
+         classic: { l: '#dfe9ff', r: '#dfe9ff', t: '#ffffff', b: '#c8d8ff', c: '#fff6c2', hi: '#ffffff', sp: '#9fb8e8', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' },
+         icon: '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14" fill="rgba(180,200,255,0.35)"/><circle cx="20" cy="20" r="9" fill="#ffffff" stroke="#c8d8ff" stroke-width="1.5"/><circle cx="20" cy="20" r="3.5" fill="#fff6c2"/></svg>',
+         art: moonflowerSVG
+       }
+     };
+     var SPECIES_KEYS = ['rose', 'sunflower', 'lavender', 'orchid', 'moonflower'];
+     var NEW_KEYS = ['sunflower', 'lavender', 'orchid', 'moonflower'];
+
+     function sunflowerSVG() {
+       return '<svg viewBox="0 0 60 112" aria-hidden="true"><g class="fxb"></g>' +
+         '<path class="st" d="M30 108 C28 88 32 64 30 34" stroke="#3f8f2e" stroke-width="3.6" stroke-linecap="round" fill="none"/>' +
+         '<path class="lf" d="M29.5 88 C15 88 7 78 7 67 C20 67 29 75 29.5 88 Z" fill="#5cb23f"/>' +
+         '<path class="lf2" d="M30.5 72 C45 72 53 62 53 51 C40 51 31 59 30.5 72 Z" fill="#4fa335"/>' +
+         '<ellipse cx="30" cy="109" rx="14" ry="3.5" fill="#cf975c"/>' +
+         '<ellipse class="pt-l" cx="16" cy="24" rx="11" ry="12" fill="#e8a812"/>' +
+         '<ellipse class="pt-r" cx="44" cy="24" rx="11" ry="12" fill="#e8a812"/>' +
+         '<ellipse class="pt-t" cx="30" cy="12" rx="11" ry="10" fill="#f2c94c"/>' +
+         '<path class="pt-b" d="M14 24 C14 40 46 40 46 24 C46 18 14 18 14 24 Z" fill="#f2c94c"/>' +
+         '<circle class="pt-c" cx="30" cy="24" r="8.5" fill="#7a4a21"/>' +
+         '<circle class="pt-sp" cx="30" cy="24" r="8.5" fill="none" stroke="#5a3a15" stroke-width="1.5"/>' +
+         '<ellipse class="pt-hi" cx="24" cy="15" rx="4.5" ry="2.6" fill="#fff3b0" opacity="0.8"/>' +
+         '<g class="fxf"></g></svg>';
+     }
+
+     function lavenderSVG() {
+       return '<svg viewBox="0 0 60 112" aria-hidden="true"><g class="fxb"></g>' +
+         '<path class="st" d="M30 108 L30 44" stroke="#3f8f2e" stroke-width="3.2" stroke-linecap="round" fill="none"/>' +
+         '<path class="lf" d="M29 92 C18 90 12 82 12 72 C22 72 29 80 29 92 Z" fill="#5cb23f"/>' +
+         '<path class="lf2" d="M31 84 C42 82 48 74 48 64 C38 64 31 72 31 84 Z" fill="#4fa335"/>' +
+         '<ellipse cx="30" cy="109" rx="14" ry="3.5" fill="#cf975c"/>' +
+         '<ellipse class="pt-l" cx="22" cy="30" rx="5" ry="6" fill="#8b5fbf"/>' +
+         '<ellipse class="pt-r" cx="38" cy="30" rx="5" ry="6" fill="#8b5fbf"/>' +
+         '<ellipse class="pt-l" cx="22" cy="18" rx="5" ry="6" fill="#8b5fbf"/>' +
+         '<ellipse class="pt-r" cx="38" cy="18" rx="5" ry="6" fill="#8b5fbf"/>' +
+         '<ellipse class="pt-t" cx="30" cy="8" rx="5.5" ry="6" fill="#a066ff"/>' +
+         '<ellipse class="pt-b" cx="30" cy="38" rx="6" ry="6" fill="#a066ff"/>' +
+         '<ellipse class="pt-c" cx="30" cy="24" rx="5" ry="14" fill="#c9a8ff"/>' +
+         '<ellipse class="pt-hi" cx="27" cy="14" rx="2" ry="3" fill="#e6d9ff" opacity="0.8"/>' +
+         '<g class="fxf"></g></svg>';
+     }
+
+     function orchidSVG() {
+       return '<svg viewBox="0 0 60 112" aria-hidden="true"><g class="fxb"></g>' +
+         '<path class="st" d="M30 108 C28 84 36 62 44 48" stroke="#3f8f2e" stroke-width="3.2" stroke-linecap="round" fill="none"/>' +
+         '<path class="lf" d="M29 100 C14 98 6 88 6 76 C20 76 29 86 29 100 Z" fill="#4fa335"/>' +
+         '<path class="lf2" d="M31 96 C44 94 52 86 52 76 C40 76 31 84 31 96 Z" fill="#5cb23f"/>' +
+         '<ellipse cx="30" cy="109" rx="14" ry="3.5" fill="#cf975c"/>' +
+         '<ellipse class="pt-l" cx="28" cy="30" rx="12" ry="9" transform="rotate(-20 28 30)" fill="#e85aa0"/>' +
+         '<ellipse class="pt-r" cx="48" cy="28" rx="11" ry="8" transform="rotate(20 48 28)" fill="#e85aa0"/>' +
+         '<ellipse class="pt-t" cx="38" cy="14" rx="9" ry="11" fill="#f27bb5"/>' +
+         '<path class="pt-b" d="M30 36 C30 48 46 48 46 36 C46 31 30 31 30 36 Z" fill="#c93a8e"/>' +
+         '<circle class="pt-c" cx="38" cy="30" r="5" fill="#fff0a0"/>' +
+         '<ellipse class="pt-hi" cx="33" cy="20" rx="4" ry="2.6" fill="#ffd0e8" opacity="0.8"/>' +
+         '<g class="fxf"></g></svg>';
+     }
+
+     function moonflowerSVG() {
+       return '<svg viewBox="0 0 60 112" aria-hidden="true"><g class="fxb"></g>' +
+         '<circle cx="30" cy="26" r="30" fill="rgba(180,200,255,0.20)"/>' +
+         '<path class="st" d="M30 108 C28 88 32 64 30 44" stroke="#3f8f2e" stroke-width="3.6" stroke-linecap="round" fill="none"/>' +
+         '<path class="lf" d="M29.5 88 C15 88 7 78 7 67 C20 67 29 75 29.5 88 Z" fill="#5cb23f"/>' +
+         '<path class="lf2" d="M30.5 72 C45 72 53 62 53 51 C40 51 31 59 30.5 72 Z" fill="#4fa335"/>' +
+         '<ellipse cx="30" cy="109" rx="14" ry="3.5" fill="#cf975c"/>' +
+         '<ellipse class="pt-l" cx="17" cy="27" rx="12" ry="13" fill="#dfe9ff"/>' +
+         '<ellipse class="pt-r" cx="43" cy="27" rx="12" ry="13" fill="#dfe9ff"/>' +
+         '<ellipse class="pt-t" cx="30" cy="15" rx="12" ry="11" fill="#ffffff"/>' +
+         '<path class="pt-b" d="M13 27 C13 45 47 45 47 27 C47 21 13 21 13 27 Z" fill="#c8d8ff"/>' +
+         '<circle class="pt-c" cx="30" cy="26" r="9" fill="#fff6c2"/>' +
+         '<circle class="pt-sp" cx="30" cy="26" r="9" fill="none" stroke="#9fb8e8" stroke-width="1.5"/>' +
+         '<ellipse class="pt-hi" cx="24" cy="18" rx="5" ry="3" fill="#ffffff" opacity="0.9"/>' +
+         '<g class="fxf"></g></svg>';
      }
 
      function addLayer(svg, key, pop, preview) {
@@ -1156,7 +1241,7 @@
        Object.keys(want).forEach(function (k) {
          if (!svg.querySelector('[data-fx="' + k + '"]')) addLayer(svg, k, pop, want[k] === 1);
        });
-       paintRose(svg, p.effects);   // newest effect recolors the whole rose
+       paintRose(svg, p.species || 'rose', p.effects);   // newest effect recolors the whole plant
        if (want.storm !== undefined) el.dataset.look = 'storm';
        else if (want.ember !== undefined) el.dataset.look = 'ember';
        else el.removeAttribute('data-look');
@@ -1240,11 +1325,11 @@
      }
 
      // ---------- Game state ----------
-     var seeds = 1;
+     var seedCounts = { rose: 1, sunflower: 0, lavender: 0, orchid: 0, moonflower: 0 };
      var coins = 50;
      var selectedRose = null;
-     var seedSelected = false;
-     var plants = {};          // mound index -> { plantedAt: ms, effects: ['rain', 'storm', ...] (in the order they landed) }
+     var selectedSpecies = null;
+     var plants = {};          // mound index -> { plantedAt: ms, species: 'rose', effects: ['rain', 'storm', ...] (in the order they landed) }
      var lastRoll = null;      // date string (YYYY-MM-DD) of the last day effects were rolled
      var lastSavedAt = null;   // ms timestamp of the last successful save
      var everSaved = false;
@@ -1254,17 +1339,16 @@
      var previewOn = false;
 
      var bedEl   = document.getElementById('bed');
-     var slotEl  = document.getElementById('roseSlot');
-     var countEl = document.getElementById('seedCount');
+     var packetSlots = document.getElementById('packetSlots');
      var hintEl  = document.getElementById('packetHint');
      var coinCountEl = document.getElementById('coinCount');
-     var buySeedBtn = document.getElementById('buySeedBtn');
      var floristDock = document.getElementById('floristDock');
+     var shopShelf = document.getElementById('shopShelf');
      var shopTab = document.getElementById('shopTab');
      var shopClose = document.getElementById('shopClose');
      var roseTooltip = document.getElementById('roseTooltip');
-     var dragGhost = document.getElementById('dragGhost');
      var dragState = null;
+     var shopDate = todayString();
      var suppressRoseClick = false;
      var tooltipIdx = null;
      var shopOpen = false;
@@ -1273,7 +1357,22 @@
      // one validator is used by BOTH loading and importing, so a bad code can never get in
      function parseSave(d) {
        try {
-         if (!d || typeof d !== 'object' || !Number.isInteger(d.seeds) || d.seeds < 0 || d.seeds > 999) return null;
+         if (!d || typeof d !== 'object') return null;
+         // seeds: old saves kept one number (rose seeds); new saves keep one count per species
+         var seedCountsOut = {};
+         SPECIES_KEYS.forEach(function (k) { seedCountsOut[k] = 0; });
+         if (Number.isInteger(d.seeds)) {
+           if (d.seeds < 0 || d.seeds > 999) return null;
+           seedCountsOut.rose = d.seeds;
+         } else if (d.seeds && typeof d.seeds === 'object' && !Array.isArray(d.seeds)) {
+           var sk = Object.keys(d.seeds);
+           for (var si = 0; si < sk.length; si++) {
+             var key = sk[si];
+             if (!Object.prototype.hasOwnProperty.call(SPECIES, key)) return null;
+             if (!Number.isInteger(d.seeds[key]) || d.seeds[key] < 0 || d.seeds[key] > 999) return null;
+             seedCountsOut[key] = d.seeds[key];
+           }
+         } else return null;
          if (!d.plants || typeof d.plants !== 'object' || Array.isArray(d.plants)) return null;
          var out = {}, now = Date.now();
          var keys = Object.keys(d.plants);
@@ -1284,6 +1383,11 @@
            if (i >= mounds.length) return null;
            var p = d.plants[k];
            if (!p || typeof p.plantedAt !== 'number' || !isFinite(p.plantedAt)) return null;
+           var sp = 'rose';   // old saves have no species: they are all roses
+           if (p.species != null) {
+             if (!Object.prototype.hasOwnProperty.call(SPECIES, p.species)) return null;
+             sp = p.species;
+           }
            var fx = [];
            if (Array.isArray(p.effects)) {
              for (var e = 0; e < p.effects.length; e++) {
@@ -1296,10 +1400,10 @@
              if (p.mark !== 'classic' && !Object.prototype.hasOwnProperty.call(EFFECTS, p.mark)) return null;
              if (p.mark !== 'classic') fx.push(p.mark);
            }
-           out[i] = { plantedAt: Math.min(p.plantedAt, now), effects: fx };
+           out[i] = { plantedAt: Math.min(p.plantedAt, now), species: sp, effects: fx };
          }
          return {
-           seeds: d.seeds, plants: out,
+           seeds: seedCountsOut, plants: out,
            coins: Number.isInteger(d.coins) && d.coins >= 0 && d.coins <= 999999999 ? d.coins : 50,
            lastRoll: typeof d.lastRoll === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d.lastRoll) ? d.lastRoll : null,
            savedAt: typeof d.savedAt === 'number' && isFinite(d.savedAt) && d.savedAt > 0 ? d.savedAt : null
@@ -1329,7 +1433,7 @@
        var ok = false;
        try {
          var ts = Date.now();
-         localStorage.setItem(SAVE_KEY, JSON.stringify({ seeds: seeds, plants: plants, coins: coins, lastRoll: lastRoll, savedAt: ts }));
+         localStorage.setItem(SAVE_KEY, JSON.stringify({ seeds: seedCounts, plants: plants, coins: coins, lastRoll: lastRoll, savedAt: ts }));
          lastSavedAt = ts;
          everSaved = true;
          ok = true;
@@ -1342,8 +1446,65 @@
      // ---------- Coins, shop and selling ----------
      function updateCoins() {
        coinCountEl.textContent = coins;
-       buySeedBtn.disabled = coins < 10;
+       refreshShopButtons();
      }
+     function refreshShopButtons() {
+       if (!shopShelf) return;
+       Array.prototype.forEach.call(shopShelf.querySelectorAll('[data-buy]'), function (btn) {
+         btn.disabled = coins < SPECIES[btn.getAttribute('data-buy')].seedPrice;
+       });
+     }
+
+     // Daily rotation: the rose is always in stock; one of the four new
+     // seeds is featured each day (same for every player, picked from the
+     // date). The rest show when they come back.
+     function featuredSeed(dateStr) {
+       return NEW_KEYS[hashDay('shop-' + dateStr) % NEW_KEYS.length];
+     }
+     function nextFeaturedLabel(key) {
+       var base = new Date(); base.setHours(12, 0, 0, 0);
+       var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+       for (var i = 1; i <= 8; i++) {
+         var d = new Date(base.getTime());
+         d.setDate(d.getDate() + i);
+         if (featuredSeed(dateString(d)) === key) return i === 1 ? 'Back tomorrow' : 'Back ' + days[d.getDay()];
+       }
+       return 'Back soon';
+     }
+     function buildShop() {
+       var feat = featuredSeed(todayString());
+       var html = '';
+       SPECIES_KEYS.forEach(function (key) {
+         var sp = SPECIES[key];
+         var avail = (key === 'rose' || key === feat);
+         html += '<div class="shelf-item' + (avail ? '' : ' unavail') + '">';
+         html += '<div class="shelf-icon">' + sp.icon + '</div>';
+         html += '<div class="shelf-copy"><strong>' + sp.name + ' seed' +
+           (key === feat ? '<span class="today-tag">Today</span>' : '') + '</strong>';
+         if (avail) html += '<span class="price-tag">🪙 ' + sp.seedPrice + '</span>';
+         else html += '<span class="back-text">' + nextFeaturedLabel(key) + '</span>';
+         html += '</div>';
+         if (avail) html += '<button class="mini-buy action-btn" type="button" data-buy="' + key + '">Buy</button>';
+         html += '</div>';
+       });
+       shopShelf.innerHTML = html;
+       refreshShopButtons();
+     }
+     function buySeed(key) {
+       var sp = SPECIES[key];
+       if (coins < sp.seedPrice) return;
+       coins -= sp.seedPrice;
+       seedCounts[key] = (seedCounts[key] || 0) + 1;
+       updateCoins();
+       updatePacket();
+       saveGame();
+       var art = /^[aeiou]/i.test(sp.name) ? 'an' : 'a';
+       showToast('Bought ' + art + ' ' + sp.name.toLowerCase() + ' seed!');
+     }
+     shopShelf.addEventListener('click', function (e) {
+       var btn = e.target.closest('[data-buy]');
+       if (btn) buySeed(btn.getAttribute('data-buy'));
+     });
 
      function hideSellBar() { selectedRose = null; }
      function showSellBar(index) { selectedRose = String(index); }
@@ -1366,10 +1527,10 @@
        tgt.classList.add('sold');
      }
 
-     function sellRoseAt(index) {
+     function sellPlantAt(index) {
        var p = plants[index];
        if (!p || stageOf(p) !== 2) { hideSellBar(); return false; }
-       var name = roseName(p.effects), value = roseValue(p.effects);
+       var name = plantName(p.species || 'rose', p.effects), value = plantValue(p.species || 'rose', p.effects);
        delete plants[index];
        var mound = mounds[index];
        var plantEl = mound.querySelector('.plant');
@@ -1388,16 +1549,6 @@
        return true;
      }
 
-     buySeedBtn.addEventListener('click', function () {
-       if (coins < 10) return;
-       coins -= 10;
-       seeds++;
-       updateCoins();
-       updatePacket();
-       saveGame();
-       showToast('Bought a rose seed!');
-     });
-
      // ---------- Phone shop panel ----------
      function setShopOpen(v) {
        shopOpen = !!v && narrowMq.matches;
@@ -1411,31 +1562,34 @@
      if (narrowMq.addEventListener) narrowMq.addEventListener('change', onNarrowChange);
      else if (narrowMq.addListener) narrowMq.addListener(onNarrowChange);
 
-     // ---------- Rose tooltip + drag-to-sell ----------
-     function roseEmoji(fx) {
-       if (isRainbow(fx)) return '🌈';
-       var last = fx[fx.length - 1];
-       return last === 'golden' ? '🌼' : last === 'frost' ? '🥀' : last === 'ember' ? '🌺' : '🌹';
-     }
+     // ---------- Plant tooltip + drag-to-sell ----------
      // hovering a plant shows its effects AND what it is worth
+     function fmtAge(ms) {
+       var min = Math.max(0, Math.floor(ms / 60000));
+       if (min < 1) return 'less than a minute ago';
+       if (min < 60) return min + ' min ago';
+       var h = Math.floor(min / 60);
+       if (h < 48) return h + 'h ago';
+       return Math.floor(h / 24) + 'd ago';
+     }
      function tooltipMarkup(index) {
        var p = plants[index];
        if (!p) return '';
+       var sp = SPECIES[p.species || 'rose'];
        var stage = stageOf(p);
-       var ageMinutes = Math.max(0, Math.floor((Date.now() - p.plantedAt) / 60000));
-       var planted = '<div>Planted ' + (ageMinutes < 1 ? 'less than a minute ago' : ageMinutes + ' min ago') + '</div>';
+       var planted = '<div>Planted ' + fmtAge(Date.now() - p.plantedAt) + '</div>';
        if (stage < 2) {
-         return '<strong>Growing rose</strong><div>Stage: ' + (stage === 0 ? 'Seedling · still underground' : 'Sprout · growing') + '</div>' + planted +
-           '<div class="tip-story">Only fully grown roses gain weather effects. Let it bloom first.</div>';
+         return '<strong>Growing ' + sp.name + '</strong><div>Stage: ' + (stage === 0 ? 'Seedling · still underground' : 'Sprout · growing') + '</div>' + planted +
+           '<div class="tip-story">Only fully grown plants gain weather effects. Let it bloom first.</div>';
        }
        var fx = p.effects;
        var lines = !fx.length ? 'No weather effects yet.'
          : fx.map(function (k) { return '• ' + EFFECTS[k].label; }).join('<br>');
-       if (isRainbow(fx)) lines += '<br>🌈 All five effects: a Rainbow rose!';
-       return '<strong>' + roseName(fx) + '</strong>' +
+       if (isRainbow(fx)) lines += '<br>🌈 All five effects: a Rainbow ' + sp.name + '!';
+       return '<strong>' + plantName(p.species || 'rose', fx) + '</strong>' +
          '<div>Stage: Fully bloomed · ready to sell</div>' + planted +
          '<div class="tip-story"><b>Effects</b><br>' + lines + '</div>' +
-         '<div style="margin-top:6px"><b>Worth: ' + roseValue(fx) + ' coins</b></div>' +
+         '<div style="margin-top:6px"><b>Worth: ' + plantValue(p.species || 'rose', fx) + ' coins</b></div>' +
          '<div style="margin-top:6px">Drag this bloom to the <b>Shop</b> to sell it.</div>';
      }
      function placeTooltip(x, y) {
@@ -1460,12 +1614,12 @@
        var p = plants[index];
        if (p && stageOf(p) === 2) {
          m.classList.add('rose-draggable');
-         m.setAttribute('aria-label', roseName(p.effects) + ', worth ' + roseValue(p.effects) + ' coins. Drag to the Shop to sell.');
-         m.title = roseName(p.effects) + ' · ' + roseValue(p.effects) + ' coins';
+         m.setAttribute('aria-label', plantName(p.species || 'rose', p.effects) + ', worth ' + plantValue(p.species || 'rose', p.effects) + ' coins. Drag to the Shop to sell.');
+         m.title = plantName(p.species || 'rose', p.effects) + ' · ' + plantValue(p.species || 'rose', p.effects) + ' coins';
        } else if (p) {
          m.classList.remove('rose-draggable');
-         m.setAttribute('aria-label', stageOf(p) === 0 ? 'Rose seedling' : 'Rose sprout');
-         m.title = 'Growing rose · hover for status';
+         m.setAttribute('aria-label', SPECIES[p.species || 'rose'].name + (stageOf(p) === 0 ? ' seedling' : ' sprout'));
+         m.title = 'Growing ' + SPECIES[p.species || 'rose'].name + ' · hover for status';
        } else {
          m.classList.remove('rose-draggable');
          m.setAttribute('aria-label', 'Empty soil mound');
@@ -1492,39 +1646,64 @@
 
      function beginRoseDrag(index, x, y) {
        var p = plants[index];
-       if (!p || stageOf(p) !== 2 || seedSelected) return;
-       dragState = { index: String(index), startX: x, startY: y, x: x, y: y, active: false };
+       if (!p || stageOf(p) !== 2 || selectedSpecies) return;
+       dragState = { index: String(index), startX: x, startY: y, x: x, y: y, active: false, el: null };
      }
+     // the plant ITSELF lifts off the mound and follows the pointer — no emoji ghost
      function moveRoseDrag(x, y) {
        if (!dragState) return;
        dragState.x = x; dragState.y = y;
        if (!dragState.active && Math.hypot(x - dragState.startX, y - dragState.startY) > 8) {
          dragState.active = true;
          var m = mounds[Number(dragState.index)];
-         m.classList.add('dragging-rose');
-         dragGhost.style.display = 'block';
-         dragGhost.textContent = roseEmoji(plants[dragState.index] ? plants[dragState.index].effects : []);
+         var pe = m.querySelector('.plant');
+         if (pe) {
+           dragState.el = pe;
+           m.classList.add('dragging-rose');
+           pe.classList.add('dragging-plant');
+           pe.style.position = 'fixed';
+           pe.style.bottom = 'auto';
+           pe.style.left = x + 'px';
+           pe.style.top = y + 'px';
+           pe.style.translate = '-50% -55%';
+           pe.style.rotate = '-9deg';
+           pe.style.scale = '1.05';
+           pe.style.width = pe.getBoundingClientRect().width + 'px';
+           pe.style.zIndex = '30';
+           pe.style.pointerEvents = 'none';
+           document.body.appendChild(pe);
+         }
          hideRoseTooltip();
          hideSellBar();
        }
        if (dragState.active) {
-         dragGhost.style.left = x + 'px'; dragGhost.style.top = y + 'px';
+         if (dragState.el) { dragState.el.style.left = x + 'px'; dragState.el.style.top = y + 'px'; }
          setShopHover(overShop(x, y));      // highlight only; the shop never names a price
        }
      }
-     function finishRoseDrag(x, y) {
+     // puts a dragged plant back on its mound (unless it was sold)
+     function restoreDraggedPlant(state) {
+       if (!state || !state.el) return;
+       var pe = state.el;
+       var m = mounds[Number(state.index)];
+       pe.classList.remove('dragging-plant');
+       ['position', 'bottom', 'left', 'top', 'translate', 'rotate', 'scale', 'width', 'zIndex', 'pointerEvents'].forEach(function (k) { pe.style[k] = ''; });
+       if (m) { m.appendChild(pe); m.classList.remove('dragging-rose'); }
+       state.el = null;
+     }
+     function finishRoseDrag(x, y, cancelled) {
        if (!dragState) return;
        var state = dragState;
+       var wasActive = state.active;
+       var idx = Number(state.index);
+       restoreDraggedPlant(state);
        dragState = null;
-       var m = mounds[Number(state.index)];
-       if (m) m.classList.remove('dragging-rose');
-       dragGhost.style.display = 'none';
        setShopHover(false);
-       if (!state.active) return;
+       if (!wasActive || cancelled) return;
        suppressRoseClick = true;
        setTimeout(function () { suppressRoseClick = false; }, 80);
-       if (overShop(x, y)) sellRoseAt(Number(state.index));
-       else showToast(narrowMq.matches && !shopOpen ? 'Drop the rose onto the Shop button to sell it.' : 'Drop the rose into the Shop to sell it.');
+       if (overShop(x, y)) sellPlantAt(idx);
+       else showToast(narrowMq.matches && !shopOpen ? 'Drop the plant onto the Shop button to sell it.' : 'Drop the plant into the Shop to sell it.');
      }
      rowsEl.addEventListener('pointerdown', function (e) {
        var m = e.target.closest('.mound');
@@ -1532,8 +1711,8 @@
        beginRoseDrag(Number(m.dataset.i), e.clientX, e.clientY);
      });
      window.addEventListener('pointermove', function (e) { if (dragState) moveRoseDrag(e.clientX, e.clientY); });
-     window.addEventListener('pointerup', function (e) { if (dragState) finishRoseDrag(e.clientX, e.clientY); });
-     window.addEventListener('pointercancel', function () { if (dragState) finishRoseDrag(-999, -999); });
+     window.addEventListener('pointerup', function (e) { if (dragState) finishRoseDrag(e.clientX, e.clientY, false); });
+     window.addEventListener('pointercancel', function () { if (dragState) finishRoseDrag(-999, -999, true); });
      rowsEl.addEventListener('pointerover', function (e) {
        var m = e.target.closest('.mound');
        if (!m || m.contains(e.relatedTarget)) return;
@@ -1552,15 +1731,27 @@
 
      // ---------- Packet ----------
      function updatePacket() {
-       countEl.textContent = seeds;
-       slotEl.classList.toggle('empty', seeds === 0);
-       slotEl.setAttribute('aria-pressed', seedSelected && seeds > 0 ? 'true' : 'false');
-       bedEl.classList.toggle('planting', seedSelected && seeds > 0);
-       if (seedSelected) hideSellBar();
-       if (seeds === 0)       hintEl.textContent = 'Packet empty';
-       else if (seedSelected) hintEl.textContent = 'Now tap a soil mound';
-       else                   hintEl.textContent = 'Rose seed: tap to select';
+       var html = '';
+       SPECIES_KEYS.forEach(function (key) {
+         var n = seedCounts[key] || 0;
+         html += '<button class="seed-slot' + (n === 0 ? ' empty' : '') + '" type="button" data-slot="' + key + '" aria-pressed="' + (selectedSpecies === key ? 'true' : 'false') + '" aria-label="' + SPECIES[key].name + ' seed">' +
+           SPECIES[key].icon + '<span class="seed-count">' + n + '</span></button>';
+       });
+       packetSlots.innerHTML = html;
+       bedEl.classList.toggle('planting', !!selectedSpecies && (seedCounts[selectedSpecies] || 0) > 0);
+       if (selectedSpecies) hideSellBar();
+       if (selectedSpecies) hintEl.textContent = SPECIES[selectedSpecies].name + ' seed: tap a soil mound';
+       else if (SPECIES_KEYS.some(function (k) { return (seedCounts[k] || 0) > 0; })) hintEl.textContent = 'Tap a seed, then a mound';
+       else hintEl.textContent = 'Packet empty — buy seeds at the shop';
      }
+     packetSlots.addEventListener('click', function (e) {
+       var btn = e.target.closest('[data-slot]');
+       if (!btn) return;
+       var key = btn.getAttribute('data-slot');
+       if ((seedCounts[key] || 0) < 1) return;
+       selectedSpecies = (selectedSpecies === key ? null : key);
+       updatePacket();
+     });
 
      function stageOf(p) {
        var age = Date.now() - p.plantedAt;
@@ -1659,10 +1850,11 @@
          updateMoundRoseState(k);
          if (tooltipIdx === String(k) && roseTooltip.classList.contains('show')) roseTooltip.innerHTML = tooltipMarkup(k);
 
+         if (!el) return;   // being dragged: the plant element is following the pointer, not on its mound
          if (el.dataset.stage !== String(s)) {
            el.dataset.stage = s;
            el.className = 'plant s' + s;
-           el.innerHTML = s === 2 ? roseSVG() : ART[s];
+           el.innerHTML = s === 2 ? SPECIES[p.species || 'rose'].art() : ART[s];
            el.style.animation = 'none';
            void el.offsetWidth;
            el.style.animation = '';
@@ -1677,16 +1869,16 @@
        el.className = 'plant';
        m.appendChild(el);
        m.classList.add('has-plant');
-       m.setAttribute('aria-label', 'Soil mound with a rose');
+       m.setAttribute('aria-label', 'Soil mound with a plant');
      }
 
      function plantAt(m) {
        var i = m.dataset.i;
-       if (!seedSelected || seeds < 1 || plants[i]) return;
-       plants[i] = { plantedAt: Date.now(), effects: [] };
+       if (!selectedSpecies || (seedCounts[selectedSpecies] || 0) < 1 || plants[i]) return;
+       plants[i] = { plantedAt: Date.now(), species: selectedSpecies, effects: [] };
        addPlantEl(m);
-       seeds--;
-       seedSelected = false;
+       seedCounts[selectedSpecies]--;
+       selectedSpecies = null;
        updatePacket();
        renderPlants();
        saveGame();
@@ -1704,18 +1896,12 @@
        renderPlants();
      }
 
-     slotEl.addEventListener('click', function () {
-       if (seeds < 1) return;
-       seedSelected = !seedSelected;
-       updatePacket();
-     });
-
      rowsEl.addEventListener('click', function (e) {
        if (suppressRoseClick) { e.preventDefault(); return; }
        var m = e.target.closest('.mound');
        if (!m) return;
        var i = m.dataset.i;
-       if (seedSelected && seeds > 0) { plantAt(m); return; }
+       if (selectedSpecies && (seedCounts[selectedSpecies] || 0) > 0) { plantAt(m); return; }
        if (plants[i] && stageOf(plants[i]) === 2) {
          if (selectedRose === String(i)) hideSellBar();
          else showSellBar(i);
@@ -1729,7 +1915,7 @@
        if (m) {
          e.preventDefault();
          var i = m.dataset.i;
-         if (seedSelected && seeds > 0) plantAt(m);
+         if (selectedSpecies && (seedCounts[selectedSpecies] || 0) > 0) plantAt(m);
          else if (plants[i] && stageOf(plants[i]) === 2) {
            if (selectedRose === String(i)) hideSellBar();
            else showSellBar(i);
@@ -1776,8 +1962,8 @@
        clearImportConfirm();
      }
 
-     // everything needed to rebuild the garden exactly: coins, seeds, plants (with effects), last roll date
-     function snapshot() { return { seeds: seeds, plants: plants, coins: coins, lastRoll: lastRoll }; }
+     // everything needed to rebuild the garden exactly: coins, seeds, plants (with species + effects), last roll date
+     function snapshot() { return { seeds: seedCounts, plants: plants, coins: coins, lastRoll: lastRoll }; }
      function makeCode() { return CODE_PREFIX + btoa(JSON.stringify(snapshot())); }
      function decodeCode(text) {
        try {
@@ -1796,9 +1982,9 @@
          m.setAttribute('aria-label', 'Empty soil mound');
          m.removeAttribute('title');
        });
-       seeds = s.seeds; coins = s.coins; plants = s.plants;
+       seedCounts = s.seeds; coins = s.coins; plants = s.plants;
        lastRoll = s.lastRoll || todayString();
-       seedSelected = false;
+       selectedSpecies = null;
        hideSellBar();
        hideRoseTooltip();
        Object.keys(plants).forEach(function (k) { addPlantEl(mounds[k]); });
@@ -1844,8 +2030,10 @@
        }
        pendingImport = parsed;
        var n = Object.keys(parsed.plants).length;
+       var totalSeeds = 0;
+       SPECIES_KEYS.forEach(function (k) { totalSeeds += parsed.seeds[k] || 0; });
        importConfirmText.textContent = 'Replace your current garden with this one (' + parsed.coins + ' coins, ' +
-         parsed.seeds + ' seeds, ' + n + (n === 1 ? ' plant' : ' plants') + ')? Your current garden will be lost.';
+         totalSeeds + ' seeds, ' + n + (n === 1 ? ' plant' : ' plants') + ')? Your current garden will be lost.';
        importConfirm.hidden = false;
        setSaveMsg('');
      });
@@ -1908,12 +2096,13 @@
      // ---------- Start up ----------
      var saved = loadGame();
      if (saved) {
-       seeds = saved.seeds; plants = saved.plants; coins = saved.coins; lastRoll = saved.lastRoll;
+       seedCounts = saved.seeds; plants = saved.plants; coins = saved.coins; lastRoll = saved.lastRoll;
        lastSavedAt = saved.savedAt; everSaved = true;
      }
      if (!lastRoll) lastRoll = todayString();
      Object.keys(plants).forEach(function (k) { addPlantEl(mounds[k]); });
      updatePacket();
+     buildShop();
      updateCoins();
      refreshLastSaved();
      applyWeather();
@@ -1928,6 +2117,7 @@
          realWeather = w;
          if (!previewOn) { shown = w; applyWeather(); }
        }
+       if (todayString() !== shopDate) { shopDate = todayString(); buildShop(); }   // the featured seed rotates at midnight
        catchUp(true);                     // midnight roll while the page is open
        renderPlants();
      }

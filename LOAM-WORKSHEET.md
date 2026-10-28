@@ -8,9 +8,14 @@ coins, Loam Florist storefront (left side, grounded; bottom sheet on
 phones; compact rows), drag-to-sell (the plant itself drags now, no
 emoji ghost), sway animations, TEST buttons, visible save system (Saved
 flash + export/import codes). 5 species: Rose, Sunflower, Lavender,
-Orchid, Moonflower — rose always in the shop, the other four rotate one
-featured seed per day. `index.html` lives IN the loam repo (pushed by
-buddy, with his fixes). Still no daily claim, pick-up, or friends yet.
+Orchid, Moonflower — ALL available in the shop at all times (the daily
+rotation was removed 2026-10-28 at his call). Each species is its own
+size (sunflower tallest, lavender slimmest) and all five blooms were
+revamped 2026-10-28 (layered petals, sunflower rays, fuller lavender
+spike, second orchid bloom, brighter moonflower glow + sparkles). The
+seed packet is a bottom bar now, under the bed instead of on top.
+`index.html` lives IN the loam repo (pushed by buddy, with his fixes).
+Still no daily claim, pick-up, or friends yet.
 
 ## The game in one line
 
@@ -72,15 +77,22 @@ old single-number seed counts become rose-only counts.
 | Orchid | 75 | 180 | pink exotic bloom, arching stem |
 | Moonflower | 120 | 300 | white glowing bloom |
 
-- **Daily rotation:** the rose is always in the shop. Each day ONE of the
-  four new seeds is featured (same for every player, picked from the
-  date: `hashDay('shop-' + date) % 4`). The other three show greyed with
-  when they come back ("Back tomorrow" / "Back Fri"). Seeds you already
-  own stay in your packet no matter the rotation — rotation only gates
-  buying, never planting.
+- **Daily rotation (REMOVED 2026-10-28, his call):** all five seeds are
+  available in the shop all the time now — no featured seed, no waiting
+  for a day, no greyed rows.
 - The packet holds one slot per species (compact 40px slots with count
-  badges); tap a slot to select it, tap a mound to plant. Empty slots are
-  dashed and can't be selected.
+  badges); tap a slot to select it, tap a mound to plant.
+- **Packet position (moved 2026-10-28, his call):** the seed bar sits at
+  the BOTTOM of the garden screen, under the bed, instead of on top.
+- **Unique sizes (2026-10-28):** every species is its own size via
+  `.sp-*` classes — Sunflower 115% (tallest), Moonflower 108%, Orchid
+  100%, Rose 92%, Lavender 62% (slimmest).
+- **Bloom revamps (2026-10-28):** all five blooms redrawn richer — Rose
+  gets a back petal ring + a second petal fold; Sunflower gets 8 ray
+  petals + a third leaf; Lavender gets a fuller spike (bottom buds +
+  tiny floret dots) + a third blade; Orchid gets a second smaller bloom
+  lower on the arch + a bud + an extra side petal; Moonflower gets a
+  double glow halo + 4 sparkles + a second highlight.
 - **Drag = the plant itself (since 2026-10-28):** dragging lifts the real
   plant element off its mound and it follows the pointer (tilted, with a
   shadow). No more 🌹/🌈 emoji ghost. Dropping outside the shop puts the
@@ -280,6 +292,13 @@ Lavender / Orchid / Moonflower join the Rose (ladder 10→120 seed price,
 greyed with return day; drag lifts the real plant (no emoji ghost);
 growth is now 12h sprout / 24h bloom. Pushed to AJChapagain/loam same
 night.
+
+All seeds available + bloom revamps + unique sizes + bottom seed bar:
+DONE 2026-10-28 night (buddy direct fix) — rotation REMOVED, every seed
+buyable any time; all five blooms redrawn richer; each species its own
+size (Sunflower 115%, Moonflower 108%, Orchid 100%, Rose 92%, Lavender
+62%); seed packet moved from the top to a bottom bar under the bed.
+Pushed to AJChapagain/loam same night.
 
 1. Daily free seed claim (1/day, can't double-claim).
 2. Picking plants back up (later, if wanted).

@@ -185,6 +185,7 @@
    /* ---------- Seed packet ---------- */
    .packet {
      display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
+     width: min(560px, 94vw);
      padding: 7px 14px 7px 12px;
      border-radius: 14px;
      background: #fff4d9;
@@ -245,6 +246,12 @@
    .plant.s0 { width: 46%; bottom: 54%; }
    .plant.s1 { width: 66%; }
    .plant.s2 { width: 92%; }
+   /* every species is its own size: the sunflower towers, the lavender stays slim */
+   .plant.s2.sp-rose { width: 92%; }
+   .plant.s2.sp-sunflower { width: 115%; }
+   .plant.s2.sp-lavender { width: 62%; }
+   .plant.s2.sp-orchid { width: 100%; }
+   .plant.s2.sp-moonflower { width: 108%; }
    @keyframes grow { from { transform: scale(0.3); opacity: 0.2; } to { transform: none; opacity: 1; } }
 
    /* living roses: a gentle sway, stronger in a storm */
@@ -511,11 +518,7 @@
      align-self: flex-start; font-size: 11px; font-weight: 700; color: #6b3f00;
      background: #ffe08a; border: 1.5px solid #d9a21b; border-radius: 5px; padding: 1px 6px;
    }
-   .back-text { font-size: 10px; font-style: italic; color: #8a6a42; }
-   .today-tag { font-size: 9px; font-weight: 700; background: #2f8f4a; color: #eaffef; border-radius: 4px; padding: 1px 5px; margin-left: 4px; vertical-align: middle; }
    .mini-buy { padding: 6px 12px; font-size: 11px; }
-   .shelf-item.unavail { opacity: .55; }
-   .shelf-item.unavail .shelf-icon { filter: grayscale(1); opacity: .6; }
 
    .shop-door-row { display: flex; align-items: stretch; gap: 7px; margin-top: 8px; }
    .shop-dropzone {
@@ -716,12 +719,6 @@
        </div>
      </div>
 
-     <div class="packet" aria-label="Your seeds">
-       <div class="packet-title">Your Seeds</div>
-       <div class="packet-slots" id="packetSlots"></div>
-       <div class="packet-hint" id="packetHint" aria-live="polite">Tap a seed, then a mound</div>
-     </div>
-
      <!-- The shop and the bed stand on the same grass line -->
      <div class="stage" id="stage">
 
@@ -785,6 +782,13 @@
          <div class="box"><div class="rows" id="rows"></div><div class="tint"></div></div>
          <div class="front"></div>
        </div>
+     </div>
+
+     <!-- seed bar: sits at the bottom now, instead of on top -->
+     <div class="packet" aria-label="Your seeds">
+       <div class="packet-title">Your Seeds</div>
+       <div class="packet-slots" id="packetSlots"></div>
+       <div class="packet-hint" id="packetHint" aria-live="polite">Tap a seed, then a mound</div>
      </div>
 
      <!-- TEST ONLY: remove later -->
@@ -1056,8 +1060,8 @@
      };
 
      // The bloom is drawn bigger and rounder now, with each petal given a
-     // class so an effect can recolor the WHOLE rose (see PALETTES).
-     // .fxb = decorations behind the rose, .fxf = decorations in front.
+     // class so an effect can recolor the WHOLE plant (see PALETTES).
+     // .fxb = decorations behind the plant, .fxf = decorations in front.
      function roseSVG() {
        return '<svg viewBox="0 0 60 112" aria-hidden="true"><g class="fxb"></g>' +
          '<path class="st" d="M30 108 C28 88 32 64 30 44" stroke="#3f8f2e" stroke-width="3.6" stroke-linecap="round" fill="none"/>' +
@@ -1067,13 +1071,18 @@
          '<path d="M30.5 70 C38 66 45 60 49 54" stroke="#3a7f29" stroke-width="1" fill="none" opacity="0.6"/>' +
          '<ellipse cx="30" cy="109" rx="14" ry="3.5" fill="#cf975c"/>' +
          '<path class="lf" d="M21 40 L30 49 L39 40 L34 44.5 L30 42 L26 44.5 Z" fill="#3f8f2e"/>' +
+         '<ellipse class="pt-l" cx="10" cy="30" rx="10" ry="13" fill="#b3174f"/>' +
+         '<ellipse class="pt-r" cx="50" cy="30" rx="10" ry="13" fill="#b3174f"/>' +
+         '<ellipse class="pt-t" cx="30" cy="8" rx="10" ry="9" fill="#d81b60"/>' +
          '<ellipse class="pt-l" cx="17" cy="27" rx="12" ry="13" fill="#b3174f"/>' +
          '<ellipse class="pt-r" cx="43" cy="27" rx="12" ry="13" fill="#b3174f"/>' +
          '<ellipse class="pt-t" cx="30" cy="15" rx="12" ry="11" fill="#d81b60"/>' +
          '<path class="pt-b" d="M13 27 C13 45 47 45 47 27 C47 21 13 21 13 27 Z" fill="#d81b60"/>' +
          '<circle class="pt-c" cx="30" cy="26" r="9" fill="#e63b78"/>' +
          '<path class="pt-sp" d="M25 27 C25 20 35 20 35 27 C35 31 28 31 28 27 C28 24.5 32 24.5 32 27" stroke="#a3104a" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
+         '<path class="pt-sp" d="M20 32 C22 36 26 38 30 38 C35 38 39 35 40 31" stroke="#a3104a" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.7"/>' +
          '<ellipse class="pt-hi" cx="24" cy="18" rx="5" ry="3" fill="#f48fb1" opacity="0.7"/>' +
+         '<ellipse class="pt-hi" cx="36" cy="22" rx="3" ry="2" fill="#f48fb1" opacity="0.5"/>' +
          '<g class="fxf"></g></svg>';
      }
 
@@ -1105,10 +1114,8 @@
      }
 
      // ---------- Species: 5 plants, each a step up from the last ----------
-     // The rose is always in the shop. The other four ROTATE: one featured
-     // seed per day (same for every player, picked from the date), so a
-     // seed you miss comes back around. Every plant uses the same petal
-     // classes, so weather palettes recolor any species.
+     // Every seed is available in the shop, all the time. Every plant uses
+     // the same petal classes, so weather palettes recolor any species.
      var SPECIES = {
        rose: {
          name: 'Rose', seedPrice: 10, base: 20,
@@ -1142,14 +1149,19 @@
        }
      };
      var SPECIES_KEYS = ['rose', 'sunflower', 'lavender', 'orchid', 'moonflower'];
-     var NEW_KEYS = ['sunflower', 'lavender', 'orchid', 'moonflower'];
 
      function sunflowerSVG() {
+       var rays = '';
+       for (var a = 0; a < 360; a += 45) {
+         rays += '<ellipse class="pt-t" cx="30" cy="6" rx="4.5" ry="10" transform="rotate(' + a + ' 30 24)" fill="#f2c94c"/>';
+       }
        return '<svg viewBox="0 0 60 112" aria-hidden="true"><g class="fxb"></g>' +
          '<path class="st" d="M30 108 C28 88 32 64 30 34" stroke="#3f8f2e" stroke-width="3.6" stroke-linecap="round" fill="none"/>' +
          '<path class="lf" d="M29.5 88 C15 88 7 78 7 67 C20 67 29 75 29.5 88 Z" fill="#5cb23f"/>' +
          '<path class="lf2" d="M30.5 72 C45 72 53 62 53 51 C40 51 31 59 30.5 72 Z" fill="#4fa335"/>' +
+         '<path class="lf" d="M29.5 56 C20 54 14 48 14 40 C22 40 29 46 29.5 56 Z" fill="#5cb23f"/>' +
          '<ellipse cx="30" cy="109" rx="14" ry="3.5" fill="#cf975c"/>' +
+         rays +
          '<ellipse class="pt-l" cx="16" cy="24" rx="11" ry="12" fill="#e8a812"/>' +
          '<ellipse class="pt-r" cx="44" cy="24" rx="11" ry="12" fill="#e8a812"/>' +
          '<ellipse class="pt-t" cx="30" cy="12" rx="11" ry="10" fill="#f2c94c"/>' +
@@ -1165,7 +1177,10 @@
          '<path class="st" d="M30 108 L30 44" stroke="#3f8f2e" stroke-width="3.2" stroke-linecap="round" fill="none"/>' +
          '<path class="lf" d="M29 92 C18 90 12 82 12 72 C22 72 29 80 29 92 Z" fill="#5cb23f"/>' +
          '<path class="lf2" d="M31 84 C42 82 48 74 48 64 C38 64 31 72 31 84 Z" fill="#4fa335"/>' +
+         '<path class="lf" d="M29 100 C20 99 14 94 14 87 C22 87 29 92 29 100 Z" fill="#5cb23f"/>' +
          '<ellipse cx="30" cy="109" rx="14" ry="3.5" fill="#cf975c"/>' +
+         '<ellipse class="pt-l" cx="22" cy="42" rx="4" ry="5" fill="#8b5fbf"/>' +
+         '<ellipse class="pt-r" cx="38" cy="42" rx="4" ry="5" fill="#8b5fbf"/>' +
          '<ellipse class="pt-l" cx="22" cy="30" rx="5" ry="6" fill="#8b5fbf"/>' +
          '<ellipse class="pt-r" cx="38" cy="30" rx="5" ry="6" fill="#8b5fbf"/>' +
          '<ellipse class="pt-l" cx="22" cy="18" rx="5" ry="6" fill="#8b5fbf"/>' +
@@ -1173,6 +1188,10 @@
          '<ellipse class="pt-t" cx="30" cy="8" rx="5.5" ry="6" fill="#a066ff"/>' +
          '<ellipse class="pt-b" cx="30" cy="38" rx="6" ry="6" fill="#a066ff"/>' +
          '<ellipse class="pt-c" cx="30" cy="24" rx="5" ry="14" fill="#c9a8ff"/>' +
+         '<circle class="pt-hi" cx="26" cy="14" r="1.8" fill="#e6d9ff"/>' +
+         '<circle class="pt-hi" cx="34" cy="20" r="1.8" fill="#e6d9ff"/>' +
+         '<circle class="pt-hi" cx="26" cy="28" r="1.8" fill="#e6d9ff"/>' +
+         '<circle class="pt-hi" cx="34" cy="34" r="1.8" fill="#e6d9ff"/>' +
          '<ellipse class="pt-hi" cx="27" cy="14" rx="2" ry="3" fill="#e6d9ff" opacity="0.8"/>' +
          '<g class="fxf"></g></svg>';
      }
@@ -1183,6 +1202,12 @@
          '<path class="lf" d="M29 100 C14 98 6 88 6 76 C20 76 29 86 29 100 Z" fill="#4fa335"/>' +
          '<path class="lf2" d="M31 96 C44 94 52 86 52 76 C40 76 31 84 31 96 Z" fill="#5cb23f"/>' +
          '<ellipse cx="30" cy="109" rx="14" ry="3.5" fill="#cf975c"/>' +
+         '<circle class="pt-b" cx="40" cy="58" r="3.5" fill="#c93a8e"/>' +
+         '<ellipse class="pt-l" cx="24" cy="72" rx="7" ry="5" transform="rotate(-20 24 72)" fill="#e85aa0"/>' +
+         '<ellipse class="pt-r" cx="36" cy="72" rx="7" ry="5" transform="rotate(20 36 72)" fill="#e85aa0"/>' +
+         '<ellipse class="pt-t" cx="30" cy="64" rx="5" ry="6" fill="#f27bb5"/>' +
+         '<circle class="pt-c" cx="30" cy="72" r="3" fill="#fff0a0"/>' +
+         '<ellipse class="pt-l" cx="20" cy="36" rx="8" ry="6" transform="rotate(-35 20 36)" fill="#e85aa0"/>' +
          '<ellipse class="pt-l" cx="28" cy="30" rx="12" ry="9" transform="rotate(-20 28 30)" fill="#e85aa0"/>' +
          '<ellipse class="pt-r" cx="48" cy="28" rx="11" ry="8" transform="rotate(20 48 28)" fill="#e85aa0"/>' +
          '<ellipse class="pt-t" cx="38" cy="14" rx="9" ry="11" fill="#f27bb5"/>' +
@@ -1194,11 +1219,16 @@
 
      function moonflowerSVG() {
        return '<svg viewBox="0 0 60 112" aria-hidden="true"><g class="fxb"></g>' +
+         '<circle cx="30" cy="26" r="40" fill="rgba(180,200,255,0.10)"/>' +
          '<circle cx="30" cy="26" r="30" fill="rgba(180,200,255,0.20)"/>' +
          '<path class="st" d="M30 108 C28 88 32 64 30 44" stroke="#3f8f2e" stroke-width="3.6" stroke-linecap="round" fill="none"/>' +
          '<path class="lf" d="M29.5 88 C15 88 7 78 7 67 C20 67 29 75 29.5 88 Z" fill="#5cb23f"/>' +
          '<path class="lf2" d="M30.5 72 C45 72 53 62 53 51 C40 51 31 59 30.5 72 Z" fill="#4fa335"/>' +
          '<ellipse cx="30" cy="109" rx="14" ry="3.5" fill="#cf975c"/>' +
+         '<path d="M8 6 L9 9 L12 10 L9 11 L8 14 L7 11 L4 10 L7 9 Z" fill="#ffffff" opacity="0.9"/>' +
+         '<path d="M52 6 L53 9 L56 10 L53 11 L52 14 L51 11 L48 10 L51 9 Z" fill="#ffffff" opacity="0.9"/>' +
+         '<path d="M8 42 L9 45 L12 46 L9 47 L8 50 L7 47 L4 46 L7 45 Z" fill="#ffffff" opacity="0.7"/>' +
+         '<path d="M52 42 L53 45 L56 46 L53 47 L52 50 L51 47 L48 46 L51 45 Z" fill="#ffffff" opacity="0.7"/>' +
          '<ellipse class="pt-l" cx="17" cy="27" rx="12" ry="13" fill="#dfe9ff"/>' +
          '<ellipse class="pt-r" cx="43" cy="27" rx="12" ry="13" fill="#dfe9ff"/>' +
          '<ellipse class="pt-t" cx="30" cy="15" rx="12" ry="11" fill="#ffffff"/>' +
@@ -1206,6 +1236,7 @@
          '<circle class="pt-c" cx="30" cy="26" r="9" fill="#fff6c2"/>' +
          '<circle class="pt-sp" cx="30" cy="26" r="9" fill="none" stroke="#9fb8e8" stroke-width="1.5"/>' +
          '<ellipse class="pt-hi" cx="24" cy="18" rx="5" ry="3" fill="#ffffff" opacity="0.9"/>' +
+         '<ellipse class="pt-hi" cx="36" cy="22" rx="3" ry="2" fill="#ffffff" opacity="0.7"/>' +
          '<g class="fxf"></g></svg>';
      }
 
@@ -1348,7 +1379,6 @@
      var shopClose = document.getElementById('shopClose');
      var roseTooltip = document.getElementById('roseTooltip');
      var dragState = null;
-     var shopDate = todayString();
      var suppressRoseClick = false;
      var tooltipIdx = null;
      var shopOpen = false;
@@ -1455,36 +1485,17 @@
        });
      }
 
-     // Daily rotation: the rose is always in stock; one of the four new
-     // seeds is featured each day (same for every player, picked from the
-     // date). The rest show when they come back.
-     function featuredSeed(dateStr) {
-       return NEW_KEYS[hashDay('shop-' + dateStr) % NEW_KEYS.length];
-     }
-     function nextFeaturedLabel(key) {
-       var base = new Date(); base.setHours(12, 0, 0, 0);
-       var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-       for (var i = 1; i <= 8; i++) {
-         var d = new Date(base.getTime());
-         d.setDate(d.getDate() + i);
-         if (featuredSeed(dateString(d)) === key) return i === 1 ? 'Back tomorrow' : 'Back ' + days[d.getDay()];
-       }
-       return 'Back soon';
-     }
+     // Every seed is available, all the time — no rotation, no waiting for a day.
      function buildShop() {
-       var feat = featuredSeed(todayString());
        var html = '';
        SPECIES_KEYS.forEach(function (key) {
          var sp = SPECIES[key];
-         var avail = (key === 'rose' || key === feat);
-         html += '<div class="shelf-item' + (avail ? '' : ' unavail') + '">';
+         html += '<div class="shelf-item">';
          html += '<div class="shelf-icon">' + sp.icon + '</div>';
-         html += '<div class="shelf-copy"><strong>' + sp.name + ' seed' +
-           (key === feat ? '<span class="today-tag">Today</span>' : '') + '</strong>';
-         if (avail) html += '<span class="price-tag">🪙 ' + sp.seedPrice + '</span>';
-         else html += '<span class="back-text">' + nextFeaturedLabel(key) + '</span>';
+         html += '<div class="shelf-copy"><strong>' + sp.name + ' seed</strong>';
+         html += '<span class="price-tag">🪙 ' + sp.seedPrice + '</span>';
          html += '</div>';
-         if (avail) html += '<button class="mini-buy action-btn" type="button" data-buy="' + key + '">Buy</button>';
+         html += '<button class="mini-buy action-btn" type="button" data-buy="' + key + '">Buy</button>';
          html += '</div>';
        });
        shopShelf.innerHTML = html;
@@ -1853,7 +1864,7 @@
          if (!el) return;   // being dragged: the plant element is following the pointer, not on its mound
          if (el.dataset.stage !== String(s)) {
            el.dataset.stage = s;
-           el.className = 'plant s' + s;
+           el.className = 'plant s' + s + ' sp-' + (p.species || 'rose');
            el.innerHTML = s === 2 ? SPECIES[p.species || 'rose'].art() : ART[s];
            el.style.animation = 'none';
            void el.offsetWidth;
@@ -2117,7 +2128,6 @@
          realWeather = w;
          if (!previewOn) { shown = w; applyWeather(); }
        }
-       if (todayString() !== shopDate) { shopDate = todayString(); buildShop(); }   // the featured seed rotates at midnight
        catchUp(true);                     // midnight roll while the page is open
        renderPlants();
      }

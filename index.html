@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LOAM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,800&family=DM+Sans:wght@500;700&display=swap" rel="stylesheet">
+<style>
+   * { box-sizing: border-box; }
+   html, body { margin: 0; height: 100%; }
+   [hidden] { display: none !important; }
+
+   body {
+     position: relative;
+     min-height: 100vh;
+     min-height: 100dvh;
+     overflow: hidden;
+     font-family: 'DM Sans', system-ui, sans-serif;
+     background: linear-gradient(to bottom, #6cc4f2 0%, #a9e0f8 40%, #d9f3fb 62%, #9fd47a 62.1%, #6fb84c 100%);
+   }
+
+   /* ---------- Sky ---------- */
+   .sun {
+     position: absolute; top: -70px; right: -50px; width: 260px; height: 260px; border-radius: 50%;
+     background: radial-gradient(circle, #fff6b8 0%, #ffe46b 38%, rgba(255, 228, 107, 0.35) 62%, rgba(255, 228, 107, 0) 72%);
+     animation: glow 6s ease-in-out infinite alternate;
+   }
+   @keyframes glow { from { transform: scale(1); opacity: 0.9; } to { transform: scale(1.08); opacity: 1; } }
+
+   .cloud {
+     position: absolute; left: -200px; width: 120px; height: 36px; border-radius: 40px;
+     background: rgba(255, 255, 255, 0.9); box-shadow: 0 6px 0 rgba(255, 255, 255, 0.4);
+     animation: drift linear infinite;
+   }
+   .cloud::before, .cloud::after { content: ""; position: absolute; background: inherit; border-radius: 50%; }
+   .cloud::before { width: 54px; height: 54px; top: -26px; left: 18px; }
+   .cloud::after  { width: 40px; height: 40px; top: -18px; left: 60px; }
+   .c1 { top: 11%; animation-duration: 70s; }
+   .c2 { top: 22%; transform: scale(0.7); animation-duration: 95s; animation-delay: -40s; }
+   .c3 { top: 6%;  transform: scale(0.5); animation-duration: 120s; animation-delay: -80s; }
+   @keyframes drift { from { translate: 0 0; } to { translate: calc(100vw + 400px) 0; } }
+
+   /* ---------- Hills ---------- */
+   .hill { position: absolute; bottom: -12vh; border-radius: 50%; }
+   .h1 { left: -20%; width: 85%; height: 40vh; background: #86cc5f; }
+   .h2 { right: -25%; width: 90%; height: 34vh; background: #6db84a; }
+   .h3 { left: 10%;  width: 90%; height: 24vh; background: #58a63a; }
+
+   /* ---------- Screens ---------- */
+   .screen {
+     position: absolute; inset: 0; z-index: 2;
+     display: flex; flex-direction: column; align-items: center; justify-content: center;
+     padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
+     transition: opacity 0.7s ease, transform 0.7s ease, visibility 0.7s;
+   }
+   .title-screen { gap: clamp(28px, 7vh, 56px); }
+
+   .garden-screen {
+     justify-content: space-between;
+     gap: 8px;
+     padding-top: calc(clamp(14px, 4vh, 36px) + env(safe-area-inset-top, 0px));
+     padding-bottom: calc(clamp(34px, 9vh, 80px) + env(safe-area-inset-bottom, 0px));
+     opacity: 0; visibility: hidden; transform: translateY(30px);
+   }
+   .garden-on .title-screen { opacity: 0; visibility: hidden; transform: translateY(-40px) scale(0.96); }
+   .garden-on .garden-screen { opacity: 1; visibility: visible; transform: none; transition-delay: 0.25s; }
+
+   /* ---------- Title ---------- */
+   .logo {
+     margin: 0; font-family: 'Fraunces', Georgia, serif; font-weight: 800; letter-spacing: 0.05em; line-height: 1;
+     color: #fff8e4;
+     text-shadow: 0 3px 0 #b9814a, 0 6px 0 #8a5a2e, 0 9px 0 #6b4423, 0 16px 18px rgba(60, 35, 15, 0.35);
+   }
+   .logo.big  { font-size: clamp(72px, 24vw, 168px); animation: bob 4s ease-in-out infinite; }
+   .logo.mini { font-size: clamp(44px, 12vw, 72px); }
+   @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+   /* ---------- Button ---------- */
+   .enter {
+     font-family: inherit; font-size: clamp(18px, 4.6vw, 22px); font-weight: 700; letter-spacing: 0.04em;
+     color: #4a2f1b; min-height: 58px; padding: 0 44px; border: 0; border-radius: 999px; cursor: pointer;
+     background: linear-gradient(#ffd863, #f6bd3a);
+     box-shadow: 0 6px 0 #b57f14, 0 12px 20px rgba(60, 35, 15, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.55);
+     transition: transform 0.12s ease, box-shadow 0.12s ease;
+   }
+   .enter:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 #b57f14, 0 16px 24px rgba(60, 35, 15, 0.3), inset 0 2px 0 rgba(255,255,255,0.55); }
+   .enter:active { transform: translateY(5px);  box-shadow: 0 1px 0 #b57f14, 0 4px 8px rgba(60, 35, 15, 0.3), inset 0 2px 0 rgba(255,255,255,0.55); }
+   .enter:focus-visible { outline: 4px solid #fff; outline-offset: 4px; }
+
+   /* ---------- Garden bed ---------- */
+   :root {
+     --wood: #b07a42;
+     --wood-hi: #c68f55;
+     --soil: #a9713f;
+     --soil-deep: #94602f;
+     --mound-hi: #f0c58c;
+     --mound: #d79e62;
+     --mound-lo: #b87d46;
+   }
+
+   /* the bed and the shop share one row on the grass */
+   .stage {
+     position: relative; width: 100%;
+     display: flex; align-items: flex-end; justify-content: center;
+     gap: clamp(14px, 3vw, 30px);
+   }
+
+   .bed {
+     position: relative;
+     width: min(94vw, 470px, calc((100dvh - 300px) * 1.3));
+     margin-bottom: 14px;
+   }
+   .bed::after {
+     content: ""; position: absolute; left: -4%; right: -4%; bottom: -16px; height: 34px; z-index: -1;
+     border-radius: 50%; background: rgba(30, 60, 15, 0.38); filter: blur(7px);
+   }
+
+   .box { position: relative; aspect-ratio: 1 / 0.66; }
+   .box::before {
+     content: ""; position: absolute; inset: 0; background: var(--wood);
+     clip-path: polygon(13% 0, 87% 0, 100% 100%, 0 100%);
+   }
+   .box::after {
+     content: ""; position: absolute; inset: 0;
+     background: linear-gradient(var(--soil-deep), var(--soil));
+     clip-path: polygon(14.6% 5%, 85.4% 5%, 98% 100%, 2% 100%);
+   }
+
+   .rows {
+     position: absolute; inset: 8% 3% 0 3%; z-index: 1;
+     display: flex; flex-direction: column;
+   }
+   .row {
+     display: flex; justify-content: space-around; align-items: flex-end;
+     margin: 0 auto;
+     width: calc(62% + var(--r) * 9.5%);
+     flex: calc(0.7 + var(--r) * 0.15) 1 0;
+   }
+
+   .mound {
+     position: relative;
+     width: 20%;
+     aspect-ratio: 1.12 / 1;
+     border-radius: 50% 50% 38% 38% / 78% 78% 22% 22%;
+     background: radial-gradient(ellipse at 38% 24%, var(--mound-hi) 0%, var(--mound) 48%, var(--mound-lo) 100%);
+     box-shadow: 0 3px 0 rgba(86, 48, 18, 0.35), 0 6px 6px rgba(86, 48, 18, 0.2);
+     filter: brightness(calc(0.94 + var(--r) * 0.015));
+     -webkit-tap-highlight-color: transparent;
+   }
+   .mound::after {
+     content: ""; position: absolute; left: 22%; top: 14%; width: 30%; height: 20%;
+     border-radius: 50%; background: rgba(255, 244, 220, 0.4); filter: blur(1.5px);
+   }
+   .mound:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+   .front {
+     position: relative; z-index: 2;
+     height: clamp(26px, 8vw, 40px);
+     margin: -1px -0.3% 0;
+     border-radius: 4px 4px 12px 12px;
+     background: linear-gradient(var(--wood-hi) 0 12%, var(--wood) 12%);
+     box-shadow: 0 6px 0 rgba(0, 0, 0, 0.12);
+   }
+
+   .tint {
+     position: absolute; inset: 0; z-index: 3; pointer-events: none;
+     clip-path: polygon(13% 0, 87% 0, 100% 100%, 0 100%);
+     background: var(--tint, transparent);
+     transition: background 0.8s ease;
+   }
+   .front::after {
+     content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+     background: var(--tint, transparent);
+     transition: background 0.8s ease;
+   }
+
+   .garden-on .mound {
+     animation: pop 0.5s cubic-bezier(.3, 1.6, .5, 1) both;
+     animation-delay: var(--d, 0s);
+   }
+   @keyframes pop { from { opacity: 0; transform: translateY(14px) scale(0.6); } to { opacity: 1; transform: none; } }
+
+   /* ---------- Seed packet ---------- */
+   .packet {
+     display: flex; align-items: center; gap: 10px;
+     padding: 7px 14px 7px 12px;
+     border-radius: 14px;
+     background: #fff4d9;
+     border: 2px solid #d9b777;
+     box-shadow: 0 4px 0 #b98f4c, 0 8px 14px rgba(60, 35, 15, 0.25);
+     color: #6b4423;
+   }
+   .packet-title { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.2; }
+   .packet-hint  { font-size: 12px; opacity: 0.85; min-width: 120px; }
+
+   .seed-slot {
+     position: relative;
+     width: 50px; height: 50px; padding: 0;
+     border: 2px solid #d9b777; border-radius: 50%;
+     background: #fffaf0;
+     cursor: pointer;
+     display: grid; place-items: center;
+     transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+     -webkit-tap-highlight-color: transparent;
+   }
+   .seed-slot svg { width: 26px; height: 26px; display: block; }
+   .seed-slot:focus-visible { outline: 3px solid #4a2f1b; outline-offset: 2px; }
+   .seed-slot[aria-pressed="true"] {
+     background: #fff0b8;
+     border-color: #f2a900;
+     box-shadow: 0 0 0 4px rgba(255, 216, 99, 0.85);
+     transform: translateY(-3px) scale(1.07);
+   }
+   .seed-slot.empty { cursor: default; background: #efe3c6; border-style: dashed; }
+   .seed-slot.empty svg { opacity: 0.3; filter: grayscale(1); }
+   .seed-count {
+     position: absolute; top: -6px; right: -6px;
+     min-width: 20px; height: 20px; padding: 0 5px;
+     border-radius: 10px; background: #6b4423; color: #fff8e4;
+     font-size: 12px; line-height: 20px; text-align: center;
+   }
+
+   .planting .mound:not(.has-plant) { cursor: pointer; }
+   .planting .mound:not(.has-plant)::before {
+     content: ""; position: absolute; inset: -4px; border-radius: inherit;
+     border: 2px dashed rgba(255, 255, 255, 0.95);
+     animation: ring 1s ease-in-out infinite alternate;
+   }
+   @keyframes ring { from { opacity: 0.45; } to { opacity: 1; } }
+
+   /* ---------- Plants ---------- */
+   .plant {
+     position: absolute; left: 50%; bottom: 56%; z-index: 1;
+     translate: -50% 0;
+     transform-origin: 50% 100%;
+     pointer-events: none;
+     animation: grow 0.7s cubic-bezier(.3, 1.5, .5, 1) both;
+   }
+   .plant svg { display: block; width: 100%; height: auto; overflow: visible; }
+   .plant.s2 { pointer-events: auto; cursor: grab; }
+   .plant.s2:active { cursor: grabbing; }
+   .plant.s0 { width: 46%; bottom: 54%; }
+   .plant.s1 { width: 66%; }
+   .plant.s2 { width: 92%; }
+   @keyframes grow { from { transform: scale(0.3); opacity: 0.2; } to { transform: none; opacity: 1; } }
+
+   /* living roses: a gentle sway, stronger in a storm */
+   .plant.s2 svg { transform-origin: 50% 96%; animation: sway 4.5s ease-in-out infinite alternate; }
+   .plant.s2[data-look="storm"] svg { animation: sway 1.4s ease-in-out infinite alternate; --sw: 3.2deg; }
+   .plant.s2[data-look="ember"] svg { animation: sway 2.6s ease-in-out infinite alternate; --sw: 2deg; }
+   .plant.s1 svg { transform-origin: 50% 96%; animation: sway 3.2s ease-in-out infinite alternate; --sw: 3deg; }
+   @keyframes sway { from { transform: rotate(calc(var(--sw, 1.6deg) * -1)); } to { transform: rotate(var(--sw, 1.6deg)); } }
+
+   .twinkle { transform-box: fill-box; transform-origin: center; animation: twinkle 1s ease-in-out infinite alternate; }
+   @keyframes twinkle { from { opacity: 0.5; transform: scale(0.8); } to { opacity: 1; transform: scale(1.15); } }
+   .shimmer { transform-box: fill-box; transform-origin: center; animation: shimmer 2.2s ease-in-out infinite alternate; }
+   @keyframes shimmer { from { opacity: 0.55; transform: rotate(-12deg) scale(0.9); } to { opacity: 1; transform: rotate(12deg) scale(1.1); } }
+   .drip { transform-box: fill-box; transform-origin: center; animation: drip 1.6s ease-in infinite; }
+   @keyframes drip { 0% { transform: translateY(-1px); opacity: 1; } 70% { transform: translateY(4px); opacity: 0.9; } 100% { transform: translateY(7px); opacity: 0; } }
+   .spin { transform-box: fill-box; transform-origin: center; animation: spin 6s linear infinite; }
+   /* a newly landed effect pops in by itself; the rose is not redrawn */
+   .fxpop { transform-box: fill-box; transform-origin: center; animation: fxpop .8s cubic-bezier(.3, 1.6, .5, 1) both; }
+   @keyframes fxpop { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: none; } }
+
+   /* ---------- Top-left HUD: weather, coins, save ---------- */
+   .hud {
+     position: absolute; z-index: 4;
+     top: calc(8px + env(safe-area-inset-top, 0px)); left: 8px;
+     max-width: calc(100% - 124px);
+     display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+   }
+   .weather-badge {
+     display: flex; align-items: center; gap: 5px;
+     padding: 5px 10px 5px 8px;
+     border-radius: 999px;
+     background: rgba(255, 248, 228, 0.92);
+     border: 2px solid #d9b777;
+     color: #6b4423;
+     font-size: 12px; line-height: 1;
+     box-shadow: 0 3px 0 #b98f4c;
+   }
+   .weather-badge .wicon { font-size: 15px; }
+
+   .coins-badge {
+     display: flex; align-items: center; gap: 5px; padding: 7px 11px;
+     border-radius: 999px; background: rgba(255,248,228,0.94);
+     border: 2px solid #d9b777; color: #6b4423; font-size: 12px; line-height: 1;
+     box-shadow: 0 3px 0 #b98f4c; white-space: nowrap; font-weight: 700;
+   }
+
+   .save-wrap { position: relative; }
+   .save-btn {
+     display: flex; align-items: center; gap: 5px; padding: 7px 11px;
+     border-radius: 999px; background: rgba(255,248,228,0.94);
+     border: 2px solid #d9b777; color: #6b4423; font: 700 12px/1 'DM Sans', system-ui, sans-serif;
+     box-shadow: 0 3px 0 #b98f4c; white-space: nowrap; cursor: pointer;
+   }
+   .save-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #b98f4c; }
+   .save-btn:focus-visible { outline: 3px solid #4a2f1b; outline-offset: 2px; }
+   .saved-flash {
+     position: absolute; left: 50%; top: calc(100% + 7px); translate: -50% 0;
+     padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+     background: #2f8f4a; color: #eaffef; border: 1.5px solid #1c6030;
+     font: 700 11px/1.3 'DM Sans', system-ui, sans-serif;
+     box-shadow: 0 2px 0 rgba(0,0,0,.18);
+     opacity: 0; pointer-events: none; transition: opacity .25s ease;
+   }
+   .saved-flash.warn { background: #b4501f; border-color: #7a3210; }
+   .saved-flash.show { opacity: 1; }
+
+   .toast {
+     position: absolute; z-index: 70; left: 50%;
+     bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+     translate: -50% 0;
+     max-width: 90vw;
+     padding: 9px 18px;
+     border-radius: 999px;
+     background: rgba(60, 35, 15, 0.9);
+     color: #fff8e4;
+     font-size: 14px; text-align: center;
+     pointer-events: none;
+     opacity: 0;
+     transition: opacity 0.4s ease;
+   }
+   .toast.show { opacity: 1; }
+
+   /* ---------- Animated weather ---------- */
+   .sky-fx, .fx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; display: none; }
+   .sky-fx { z-index: 1; }
+   .fx     { z-index: 3; }
+   .garden-on .sky-fx, .garden-on .fx { display: block; animation: fxin 1s ease both; }
+   @keyframes fxin { from { opacity: 0; } to { opacity: 1; } }
+   @keyframes spin { to { transform: rotate(360deg); } }
+   @keyframes breathe { from { opacity: 0.75; } to { opacity: 1; } }
+
+   .rays {
+     position: absolute; top: -290px; right: -270px; width: 700px; height: 700px; border-radius: 50%;
+     background: repeating-conic-gradient(from 0deg, rgba(255, 246, 170, 0.42) 0deg 5deg, transparent 5deg 20deg);
+     -webkit-mask-image: radial-gradient(circle, #000 0%, rgba(0,0,0,0.6) 30%, transparent 68%);
+             mask-image: radial-gradient(circle, #000 0%, rgba(0,0,0,0.6) 30%, transparent 68%);
+     opacity: 0.55;
+     animation: spin 120s linear infinite;
+   }
+   .rays.golden {
+     top: -390px; right: -370px; width: 900px; height: 900px;
+     background: repeating-conic-gradient(from 0deg, rgba(255, 200, 80, 0.55) 0deg 7deg, transparent 7deg 20deg);
+     opacity: 0.9;
+   }
+   .glow-warm {
+     position: absolute; inset: 0;
+     background:
+       radial-gradient(circle at 85% 8%, rgba(255, 200, 90, 0.55), rgba(255, 170, 60, 0.22) 38%, rgba(255, 160, 50, 0.1) 70%, transparent 100%),
+       linear-gradient(rgba(255, 196, 90, 0.12), rgba(255, 170, 60, 0.16));
+     animation: breathe 5s ease-in-out infinite alternate;
+   }
+
+   .overcast { position: absolute; inset: 0; background: linear-gradient(rgba(80, 100, 135, 0.28), rgba(80, 100, 135, 0.08) 60%, transparent); }
+   .storm-dark { position: absolute; inset: 0; background: linear-gradient(rgba(18, 24, 48, 0.62), rgba(18, 24, 48, 0.3) 55%, rgba(18, 24, 48, 0.08) 85%); }
+   .flash {
+     position: absolute; inset: 0;
+     background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(220, 230, 255, 0.55) 45%, rgba(220, 230, 255, 0.12) 80%);
+     opacity: 0;
+   }
+   .bolt { position: absolute; top: 4%; left: 30%; width: 80px; height: 34vh; opacity: 0; filter: drop-shadow(0 0 6px #fff); }
+   .bolt svg { width: 100%; height: 100%; display: block; }
+   .flash, .bolt { animation: flash 9s linear -3s infinite; }
+   @keyframes flash {
+     0%, 86%, 100% { opacity: 0; }
+     87%   { opacity: 0.85; }
+     88.5% { opacity: 0.1; }
+     90%   { opacity: 0.6; }
+     93%   { opacity: 0; }
+   }
+
+   .p { position: absolute; display: block; will-change: transform; }
+   .drop {
+     --a: 10deg; --dx: -19vh;
+     top: -30px; width: 1.6px; height: var(--h, 16px);
+     background: linear-gradient(rgba(190, 225, 255, 0), rgba(190, 225, 255, 0.85));
+     animation: rain var(--t, 1s) linear var(--dl, 0s) infinite;
+   }
+   .drop.heavy { --a: 16deg; --dx: -31vh; width: 1.8px; }
+   @keyframes rain {
+     from { transform: translate3d(0, 0, 0) rotate(var(--a)); }
+     to   { transform: translate3d(var(--dx), 108vh, 0) rotate(var(--a)); }
+   }
+   .flake {
+     top: -12px; width: var(--s, 5px); height: var(--s, 5px); border-radius: 50%;
+     background: rgba(255, 255, 255, 0.92); box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+     animation: snow var(--t, 9s) linear var(--dl, 0s) infinite;
+   }
+   @keyframes snow {
+     0%   { transform: translate3d(0, 0, 0); }
+     50%  { transform: translate3d(var(--sw, 20px), 55vh, 0); }
+     100% { transform: translate3d(calc(var(--sw, 20px) * -0.5), 108vh, 0); }
+   }
+   .ember {
+     bottom: -14px; width: var(--s, 5px); height: var(--s, 5px); border-radius: 50%; opacity: 0;
+     background: radial-gradient(circle, #fff3b0 0%, #ffb02e 45%, #ff5a14 100%);
+     box-shadow: 0 0 6px 2px rgba(255, 120, 30, 0.7);
+     animation: rise var(--t, 6s) ease-out var(--dl, 0s) infinite;
+   }
+   @keyframes rise {
+     0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
+     12%  { opacity: 1; }
+     100% { transform: translate3d(var(--dx, 20px), -78vh, 0) scale(0.4); opacity: 0; }
+   }
+
+   /* ---------- TEST panel (remove later) ---------- */
+   .test {
+     position: absolute; z-index: 3;
+     top: calc(8px + env(safe-area-inset-top, 0px)); right: 8px;
+     display: flex; flex-direction: column; gap: 4px;
+     padding: 6px;
+     border-radius: 10px;
+     background: rgba(40, 30, 20, 0.6);
+     color: #fff8e4;
+   }
+   .test-label { font-size: 10px; letter-spacing: 0.14em; text-align: center; }
+   .test button {
+     font-family: inherit; font-size: 11px; font-weight: 700;
+     min-height: 28px; padding: 0 8px;
+     border: 0; border-radius: 6px; cursor: pointer;
+     background: #ffd863; color: #4a2f1b;
+   }
+   .test button:active { transform: translateY(1px); }
+
+   .action-btn {
+     border: 0; border-radius: 999px; padding: 9px 13px; background: #f6bd3a;
+     color: #4a2f1b; font: inherit; font-weight: 700; cursor: pointer; white-space: nowrap;
+     box-shadow: 0 3px 0 #b57f14;
+   }
+   .action-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #b57f14; }
+   .action-btn:disabled { opacity: .4; cursor: not-allowed; }
+   .action-btn.ghost { background: #e9d6ac; box-shadow: 0 3px 0 #b9a068; }
+   .action-btn.danger { background: #e2793a; color: #fff8e4; box-shadow: 0 3px 0 #a14d17; }
+
+   /* ---------- STOREFRONT (stands on the grass, left of the bed) ---------- */
+   .florist-dock {
+     position: relative; flex: none; z-index: 5;
+     width: clamp(170px, 19vw, 215px);
+     margin-bottom: 14px;
+     color: #5a3818;
+     transform-origin: 50% 100%;
+     filter: drop-shadow(0 3px 3px rgba(40, 25, 10, 0.25));
+     transition: transform .18s ease;
+   }
+   .florist-dock::after {            /* contact shadow on the grass */
+     content: ""; position: absolute; left: -6%; right: -6%; bottom: -15px; height: 32px; z-index: -1;
+     border-radius: 50%; background: rgba(30, 60, 15, 0.38); filter: blur(7px); pointer-events: none;
+   }
+   .florist-dock.drag-over { transform: scale(1.03); }
+   .florist-dock.sold { animation: shopshake .5s ease; }
+   @keyframes shopshake {
+     0%, 100% { transform: none; } 20% { transform: rotate(-1.6deg) scale(1.03); }
+     45% { transform: rotate(1.4deg) scale(1.03); } 70% { transform: rotate(-.8deg); }
+   }
+
+   .shop-sign {
+     display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+     background: linear-gradient(#6a4423, #503116);
+     border: 3px solid #35200d; border-bottom: 0; border-radius: 12px 12px 0 0;
+     color: #fff0c8;
+     box-shadow: inset 0 2px 0 rgba(255,255,255,.12);
+   }
+   .shop-logo { width: 36px; height: 36px; flex: none; }
+   .shop-name { display: flex; flex-direction: column; gap: 3px; }
+   .shop-name b { font: 800 21px/1 'Fraunces', Georgia, serif; letter-spacing: .05em; text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+   .shop-name span { font-size: 8.5px; letter-spacing: .34em; color: #f2c76b; font-weight: 700; }
+   .shop-close {
+     display: none; margin-left: auto; flex: none; width: 28px; height: 28px; padding: 0;
+     place-items: center; border-radius: 50%; border: 2px solid #35200d;
+     background: #f2c76b; color: #4a2f1b; font: 800 13px/1 'DM Sans', system-ui, sans-serif; cursor: pointer;
+   }
+   .shop-close:active { transform: translateY(1px); }
+
+   .awning { display: block; width: calc(100% + 10px); height: 26px; margin: -1px -5px -13px; position: relative; z-index: 2; filter: drop-shadow(0 3px 0 rgba(0,0,0,.2)); }
+
+   .shop-front {
+     position: relative;
+     padding: 21px 9px 10px;
+     background: linear-gradient(#f9ebc8, #f0d9a2);
+     border: 3px solid #35200d; border-top: 0; border-radius: 0 0 10px 10px;
+   }
+   .shop-step {                      /* doorstep slab: the shop sits on the ground */
+     height: 9px; margin: 0 -4px;
+     background: linear-gradient(#cdbd9c, #a8987a);
+     border: 2px solid #7a6a4c; border-top: 0; border-radius: 0 0 6px 6px;
+   }
+
+   .shop-window {
+     padding: 7px 7px 0;
+     border: 3px solid #8a5a2e; border-radius: 8px;
+     background: linear-gradient(#cfeaf6, #eaf8fc);
+     box-shadow: inset 0 0 0 2px rgba(255,255,255,.65), inset 8px 0 14px -8px rgba(255,255,255,.9);
+   }
+   .shop-window-label { font-size: 9px; letter-spacing: .22em; font-weight: 700; color: #4e7e95; text-align: center; margin-bottom: 5px; }
+   .shelf-item { display: flex; align-items: center; gap: 7px; padding-bottom: 7px; }
+   .shelf-icon {
+     width: 38px; height: 38px; flex: none; display: grid; place-items: center;
+     border-radius: 50%; background: #fffaf0; border: 2px solid #d9b777;
+   }
+   .shelf-icon svg { width: 22px; height: 22px; display: block; }
+   .shelf-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+   .shelf-copy strong { font-size: 12px; line-height: 1.1; }
+   .price-tag {
+     align-self: flex-start; font-size: 11px; font-weight: 700; color: #6b3f00;
+     background: #ffe08a; border: 1.5px solid #d9a21b; border-radius: 5px; padding: 1px 6px;
+   }
+   .shelf-board { height: 7px; margin: 0 -7px; background: linear-gradient(#c68f55, #a8793b); border-top: 2px solid #8a5a2e; }
+   .shelf-buy { display: flex; justify-content: flex-end; padding: 7px 0 7px; }
+   .shelf-buy .action-btn { padding: 7px 16px; font-size: 12px; }
+
+   .shop-door-row { display: flex; align-items: stretch; gap: 7px; margin-top: 9px; }
+   .shop-dropzone {
+     flex: 1; min-height: 78px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+     padding: 18px 6px 6px; position: relative;
+     border: 3px solid #8a5a2e; border-radius: 40px 40px 6px 6px / 28px 28px 6px 6px;
+     background: linear-gradient(#a8703a, #8d5a2a);
+     color: #fff0c8; text-align: center;
+     box-shadow: inset 0 0 0 2px rgba(255,255,255,.14);
+     transition: background .18s ease, box-shadow .18s ease, border-color .18s ease;
+   }
+   .open-sign {
+     position: absolute; top: 6px; left: 50%; translate: -50% 0;
+     font-size: 9px; font-weight: 700; letter-spacing: .2em; padding: 2px 8px;
+     border-radius: 4px; background: #2f8f4a; color: #eaffef; border: 1.5px solid #1c6030;
+     box-shadow: 0 0 8px rgba(80,255,130,.55);
+   }
+   .shop-dropzone .dz-icon { font-size: 22px; line-height: 1; }
+   .shop-dropzone .dz-text { font-size: 11px; font-weight: 700; line-height: 1.25; }
+   .florist-dock.drag-over .shop-dropzone {
+     background: linear-gradient(#ffd45e, #f0a91d); color: #4a2f1b; border-color: #c8820d;
+     box-shadow: 0 0 0 4px rgba(255,216,99,.6), inset 0 0 0 2px rgba(255,255,255,.4);
+   }
+   .florist-dock.drag-over .open-sign { background: #e0a21b; border-color: #8a5a12; color: #3b2600; box-shadow: 0 0 10px rgba(255,200,60,.8); }
+
+   /* phone: the shop is a small button on the left edge */
+   .shop-tab {
+     display: none;
+     position: absolute; left: -16px; bottom: calc(100% - 2px); z-index: 6;
+     flex-direction: column; align-items: center; gap: 2px;
+     padding: 11px 8px 6px 7px;
+     border: 3px solid #35200d; border-left: 0; border-radius: 0 14px 14px 0;
+     background: linear-gradient(#6a4423, #503116); color: #fff0c8;
+     font: 800 12px/1 'Fraunces', Georgia, serif; letter-spacing: .04em;
+     box-shadow: 0 4px 0 rgba(0,0,0,.2), inset 0 2px 0 rgba(255,255,255,.12);
+     cursor: pointer; transform-origin: 0 50%;
+     -webkit-tap-highlight-color: transparent;
+   }
+   .shop-tab::before {               /* mini awning */
+     content: ""; position: absolute; left: 0; right: 0; top: -3px; height: 8px;
+     background: repeating-linear-gradient(90deg, #d9483c 0 8px, #fff4d9 8px 16px);
+     border-radius: 0 7px 0 0; border-top: 3px solid #35200d;
+   }
+   .shop-tab svg { width: 24px; height: 24px; display: block; }
+   .shop-tab.drag-over { background: linear-gradient(#ffd45e, #f0a91d); color: #4a2f1b; transform: scale(1.12); }
+   .shop-tab.sold { animation: shopshake .5s ease; }
+   .shop-tab:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+   body.shop-open .shop-tab { visibility: hidden; }
+
+   .coin-pop {
+     position: fixed; z-index: 40; pointer-events: none; font: 800 20px 'Fraunces', Georgia, serif;
+     color: #fff6c2; text-shadow: 0 2px 0 #9a6400, 0 0 10px rgba(255,200,60,.9);
+     translate: -50% 0; animation: coinpop 1.3s ease-out forwards;
+   }
+   @keyframes coinpop { from { transform: translateY(0) scale(.7); opacity: 0; } 15% { opacity: 1; transform: translateY(-8px) scale(1.15); } to { transform: translateY(-64px) scale(1); opacity: 0; } }
+
+   .rose-tooltip {
+     position: fixed; z-index: 20; display: none; width: min(250px, calc(100vw - 24px));
+     padding: 12px 14px; border: 2px solid #d9b777; border-radius: 14px;
+     background: rgba(255,248,228,.98); color: #62401f; box-shadow: 0 8px 24px rgba(35,25,12,.22);
+     font: 12px/1.45 'DM Sans', sans-serif; pointer-events: none;
+   }
+   .rose-tooltip.show { display: block; }
+   .rose-tooltip strong { display: block; margin-bottom: 4px; font: 800 17px/1.15 'Fraunces', Georgia, serif; }
+   .rose-tooltip .tip-story { margin-top: 6px; padding-top: 6px; border-top: 1px solid #ead7b2; }
+   .drag-ghost { position: fixed; z-index: 30; pointer-events: none; font-size: 42px; filter: drop-shadow(0 4px 3px rgba(50,30,10,.3)); transform: translate(-50%,-55%) rotate(-9deg); }
+   .mound.rose-draggable { cursor: grab; touch-action: none; }
+   .mound.rose-draggable:active { cursor: grabbing; }
+   .mound.dragging-rose { opacity: .48; }
+
+   /* ---------- Save panel ---------- */
+   .save-overlay {
+     position: fixed; inset: 0; z-index: 60; display: none;
+     align-items: center; justify-content: center; padding: 16px;
+     background: rgba(40, 25, 10, 0.45);
+   }
+   .save-overlay.open { display: flex; }
+   .save-panel {
+     width: min(390px, 100%); max-height: calc(100dvh - 32px); overflow-y: auto;
+     padding: 16px; color: #5a3818;
+     border: 3px solid #35200d; border-radius: 16px;
+     background: linear-gradient(#fff9e9, #f4dfb4);
+     box-shadow: 0 8px 0 rgba(0,0,0,.2), 0 18px 40px rgba(0,0,0,.35);
+     font-size: 13px; line-height: 1.45;
+   }
+   .save-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+   .save-head h2 { margin: 0; font: 800 24px/1 'Fraunces', Georgia, serif; }
+   .x-btn {
+     width: 30px; height: 30px; padding: 0; border-radius: 50%; border: 2px solid #35200d;
+     background: #f2c76b; color: #4a2f1b; font: 800 14px/1 'DM Sans', system-ui, sans-serif; cursor: pointer;
+   }
+   .save-panel p { margin: 0 0 8px; }
+   .save-last { padding: 8px 10px; margin-bottom: 10px; border: 2px solid #d9b777; border-radius: 10px; background: rgba(255,255,255,.55); }
+   .save-last b { color: #3b2600; }
+   .save-sec { margin-top: 12px; padding-top: 12px; border-top: 1px solid #d9b777; }
+   .save-sec h3 { margin: 0 0 6px; font: 800 14px/1.2 'Fraunces', Georgia, serif; }
+   .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+   .save-panel textarea {
+     display: block; width: 100%; min-height: 72px; margin-top: 8px; padding: 8px; resize: vertical;
+     border: 2px solid #d9b777; border-radius: 10px; background: #fffdf5; color: #4a2f1b;
+     font: 11px/1.4 ui-monospace, Menlo, Consolas, monospace; word-break: break-all;
+   }
+   .confirm-row { margin-top: 10px; padding: 10px; border: 2px solid #e2793a; border-radius: 10px; background: #fff0dc; }
+   .confirm-row p { margin: 0; font-weight: 700; }
+   .save-msg { min-height: 18px; margin-top: 10px; font-weight: 700; }
+   .save-msg.ok { color: #1f7a3a; }
+   .save-msg.err { color: #b4401a; }
+
+   /* ---------- Layout by screen size ---------- */
+   @media (min-width: 700px) {
+     .stage .bed { width: min(calc(100vw - 300px), 470px, calc((100dvh - 300px) * 1.3)); flex: none; }
+   }
+   /* short windows: shrink the shop a little so it still fits beside the bed */
+   @media (min-width: 700px) and (max-height: 700px) { .florist-dock { zoom: .88; } }
+   @media (min-width: 700px) and (max-height: 620px) { .florist-dock { zoom: .78; } }
+   @media (min-width: 700px) and (max-height: 540px) { .florist-dock { zoom: .68; } }
+
+   @media (max-width: 699px) {
+     .florist-dock {
+       display: none; position: fixed; z-index: 8;
+       left: 8px; top: calc(56px + env(safe-area-inset-top, 0px));
+       width: min(250px, calc(100vw - 16px)); margin: 0; padding: 0 6px;
+       max-height: calc(100dvh - 72px - env(safe-area-inset-top, 0px));
+       overflow-x: hidden; overflow-y: auto;
+     }
+     .florist-dock.open { display: block; }
+     .florist-dock::after, .shop-step { display: none; }
+     .shop-close { display: grid; }
+     .shop-tab { display: flex; }
+     .shop-name b { font-size: 18px; }
+     .shop-logo { width: 30px; height: 30px; }
+     .shop-dropzone { min-height: 62px; }
+   }
+   @media (max-width: 480px) {
+     .save-label { display: none; }
+   }
+   @media (max-width: 430px) {
+     .weather-badge { font-size: 11px; padding-right: 7px; }
+   }
+
+   /* reduced motion: calm the sky and particles, but keep the roses alive */
+   @media (prefers-reduced-motion: reduce) {
+     .sun, .cloud, .logo.big, .rays, .glow-warm, .flash, .bolt, .mound, .mound::before, .fx, .sky-fx { animation: none !important; }
+   }
+</style>
+</head>
+<body>
+
+   <div class="sun" aria-hidden="true"></div>
+   <div class="cloud c1" aria-hidden="true"></div>
+   <div class="cloud c2" aria-hidden="true"></div>
+   <div class="cloud c3" aria-hidden="true"></div>
+   <div class="hill h1" aria-hidden="true"></div>
+   <div class="hill h2" aria-hidden="true"></div>
+   <div class="hill h3" aria-hidden="true"></div>
+
+   <div class="sky-fx" id="skyFx" aria-hidden="true"></div>
+
+   <!-- Screen 1: title -->
+   <main class="screen title-screen" id="titleScreen">
+     <h1 class="logo big">LOAM</h1>
+     <button class="enter" id="enterBtn" type="button">Enter Garden</button>
+   </main>
+
+   <!-- Screen 2: garden -->
+   <section class="screen garden-screen" id="gardenScreen" aria-hidden="true">
+     <div class="logo mini">LOAM</div>
+
+     <div class="hud">
+       <div class="weather-badge" id="weatherBadge">
+         <span class="wicon" id="weatherIcon" aria-hidden="true"></span>
+         <span id="weatherName"></span>
+       </div>
+       <div class="coins-badge" aria-live="polite" aria-label="Coins">
+         <span aria-hidden="true">🪙</span><span id="coinCount">50</span><span>coins</span>
+       </div>
+       <div class="save-wrap">
+         <button class="save-btn" id="saveBtn" type="button" aria-label="Save and backup">
+           <span aria-hidden="true">💾</span><span class="save-label">Save</span>
+         </button>
+         <span class="saved-flash" id="savedFlash" role="status" aria-live="polite"></span>
+       </div>
+     </div>
+
+     <div class="packet" aria-label="Your seeds">
+       <div>
+         <div class="packet-title">Your<br>Seeds</div>
+       </div>
+       <button class="seed-slot" id="roseSlot" type="button" aria-pressed="false" aria-label="Rose seed">
+         <svg viewBox="0 0 40 40" aria-hidden="true">
+           <ellipse cx="20" cy="22" rx="11" ry="15" fill="#b5483a" transform="rotate(25 20 22)"/>
+           <ellipse cx="20" cy="22" rx="11" ry="15" fill="none" stroke="#7d2a22" stroke-width="2" transform="rotate(25 20 22)"/>
+           <ellipse cx="16" cy="15" rx="3" ry="5.5" fill="#e8897b" opacity="0.75" transform="rotate(25 16 15)"/>
+         </svg>
+         <span class="seed-count" id="seedCount">1</span>
+       </button>
+       <div class="packet-hint" id="packetHint" aria-live="polite">Rose seed: tap to select</div>
+     </div>
+
+     <!-- The shop and the bed stand on the same grass line -->
+     <div class="stage" id="stage">
+
+       <!-- STOREFRONT -->
+       <aside class="florist-dock" id="floristDock" aria-label="Loam Florist: buy seeds or sell roses">
+         <div class="shop-sign">
+           <svg class="shop-logo" viewBox="0 0 48 48" aria-hidden="true">
+             <circle cx="24" cy="24" r="22" fill="#fff4d9" stroke="#d9b777" stroke-width="2.5"/>
+             <path d="M24 42 C23 34 25 30 24 25" stroke="#3f8f2e" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+             <path d="M23.6 36 C16 36 12 31 12 26 C19 26 23.4 29.5 23.6 36 Z" fill="#5cb23f"/>
+             <ellipse cx="18.5" cy="17" rx="6.5" ry="7" fill="#b3174f"/>
+             <ellipse cx="29.5" cy="17" rx="6.5" ry="7" fill="#b3174f"/>
+             <ellipse cx="24" cy="12.5" rx="7" ry="6.5" fill="#d81b60"/>
+             <path d="M16 18 C16 27 32 27 32 18 C32 14.5 16 14.5 16 18 Z" fill="#d81b60"/>
+             <circle cx="24" cy="16.5" r="5" fill="#e63b78"/>
+             <ellipse cx="20" cy="12.5" rx="2.6" ry="1.5" fill="#f48fb1" opacity="0.8"/>
+           </svg>
+           <div class="shop-name"><b>Loam</b><span>FLORIST</span></div>
+           <button class="shop-close" id="shopClose" type="button" aria-label="Close shop">✕</button>
+         </div>
+         <svg class="awning" viewBox="0 0 200 34" preserveAspectRatio="none" aria-hidden="true">
+           <path d="M0 0 H40 V20 a20 11 0 0 1 -40 0 Z" fill="#d9483c"/>
+           <path d="M40 0 H80 V20 a20 11 0 0 1 -40 0 Z" fill="#fff4d9"/>
+           <path d="M80 0 H120 V20 a20 11 0 0 1 -40 0 Z" fill="#d9483c"/>
+           <path d="M120 0 H160 V20 a20 11 0 0 1 -40 0 Z" fill="#fff4d9"/>
+           <path d="M160 0 H200 V20 a20 11 0 0 1 -40 0 Z" fill="#d9483c"/>
+           <rect x="0" y="0" width="200" height="4" fill="rgba(0,0,0,0.12)"/>
+         </svg>
+         <div class="shop-front">
+           <div class="shop-window">
+             <div class="shop-window-label">SEEDS</div>
+             <div class="shelf-item">
+               <div class="shelf-icon">
+                 <svg viewBox="0 0 40 40" aria-hidden="true">
+                   <ellipse cx="20" cy="22" rx="11" ry="15" fill="#b5483a" transform="rotate(25 20 22)"/>
+                   <ellipse cx="20" cy="22" rx="11" ry="15" fill="none" stroke="#7d2a22" stroke-width="2" transform="rotate(25 20 22)"/>
+                   <ellipse cx="16" cy="15" rx="3" ry="5.5" fill="#e8897b" opacity="0.75" transform="rotate(25 16 15)"/>
+                 </svg>
+               </div>
+               <div class="shelf-copy">
+                 <strong>Rose seed</strong>
+                 <span class="price-tag">🪙 10</span>
+               </div>
+             </div>
+             <div class="shelf-board"></div>
+           </div>
+           <div class="shelf-buy"><button class="action-btn" id="buySeedBtn" type="button">Buy</button></div>
+           <div class="shop-door-row">
+             <div class="shop-dropzone" id="shopDropzone">
+               <span class="open-sign">OPEN</span>
+               <span class="dz-icon" aria-hidden="true">🧺</span>
+               <span class="dz-text">Drag a bloom here to sell</span>
+             </div>
+           </div>
+         </div>
+         <div class="shop-step" aria-hidden="true"></div>
+       </aside>
+
+       <!-- phone only: small Shop button on the left edge -->
+       <button class="shop-tab" id="shopTab" type="button" aria-expanded="false" aria-controls="floristDock" aria-label="Open the Loam Florist shop. Drag a bloom onto this button to sell it.">
+         <svg viewBox="0 0 48 48" aria-hidden="true">
+           <circle cx="24" cy="24" r="22" fill="#fff4d9" stroke="#d9b777" stroke-width="2.5"/>
+           <path d="M24 42 C23 34 25 30 24 25" stroke="#3f8f2e" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+           <path d="M23.6 36 C16 36 12 31 12 26 C19 26 23.4 29.5 23.6 36 Z" fill="#5cb23f"/>
+           <ellipse cx="18.5" cy="17" rx="6.5" ry="7" fill="#b3174f"/>
+           <ellipse cx="29.5" cy="17" rx="6.5" ry="7" fill="#b3174f"/>
+           <ellipse cx="24" cy="12.5" rx="7" ry="6.5" fill="#d81b60"/>
+           <path d="M16 18 C16 27 32 27 32 18 C32 14.5 16 14.5 16 18 Z" fill="#d81b60"/>
+           <circle cx="24" cy="16.5" r="5" fill="#e63b78"/>
+         </svg>
+         <span>Shop</span>
+       </button>
+
+       <div class="bed" id="bed" aria-label="Garden bed">
+         <div class="box"><div class="rows" id="rows"></div><div class="tint"></div></div>
+         <div class="front"></div>
+       </div>
+     </div>
+
+     <!-- TEST ONLY: remove later -->
+     <div class="test">
+       <div class="test-label">TEST</div>
+       <button type="button" id="nextStageBtn">Next stage</button>
+       <button type="button" id="fullBloomBtn">Full bloom</button>
+       <button type="button" id="nextWeatherBtn">Next weather</button>
+       <button type="button" id="applyWeatherBtn">Apply weather</button>
+     </div>
+   </section>
+
+   <div class="rose-tooltip" id="roseTooltip" role="status"></div>
+   <div class="drag-ghost" id="dragGhost" aria-hidden="true" style="display:none">🌹</div>
+
+   <div class="fx" id="fx" aria-hidden="true"></div>
+
+   <!-- Save panel -->
+   <div class="save-overlay" id="saveOverlay">
+     <div class="save-panel" role="dialog" aria-modal="true" aria-labelledby="saveTitle">
+       <div class="save-head">
+         <h2 id="saveTitle">Save</h2>
+         <button class="x-btn" id="saveClose" type="button" aria-label="Close save panel">✕</button>
+       </div>
+       <p>Your garden saves automatically on this device. Use a save code to back it up or move it somewhere else.</p>
+       <div class="save-last">Last saved: <b id="lastSavedText">not saved yet</b></div>
+       <div class="btn-row"><button class="action-btn" id="saveNowBtn" type="button">Save now</button></div>
+
+       <div class="save-sec">
+         <h3>Export</h3>
+         <p>Copies your whole garden (coins, seeds, plants with their effects, and the last roll date) as one save code.</p>
+         <div class="btn-row"><button class="action-btn" id="exportBtn" type="button">Export save code</button></div>
+         <textarea id="exportBox" readonly hidden aria-label="Your save code"></textarea>
+       </div>
+
+       <div class="save-sec">
+         <h3>Import</h3>
+         <label for="importBox">Paste a save code to restore it.</label>
+         <textarea id="importBox" placeholder="Paste a save code here" spellcheck="false" autocomplete="off"></textarea>
+         <div class="btn-row"><button class="action-btn" id="importBtn" type="button">Import</button></div>
+         <div class="confirm-row" id="importConfirm" hidden>
+           <p id="importConfirmText"></p>
+           <div class="btn-row">
+             <button class="action-btn danger" id="importYes" type="button">Yes, replace my garden</button>
+             <button class="action-btn ghost" id="importNo" type="button">Cancel</button>
+           </div>
+         </div>
+       </div>
+
+       <div class="save-msg" id="saveMsg" role="status" aria-live="polite"></div>
+     </div>
+   </div>
+
+   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+   <script>
+     // ---------- Growth timing (TESTING values: lengthen later to hours / a day) ----------
+     var SEED_MS   = 1 * 60 * 1000;
+     var SPROUT_MS = 3 * 60 * 1000;
+     var CHECK_MS  = 10 * 1000;
+
+     var SAVE_KEY = 'loam.save.v2';
+     var CODE_PREFIX = 'LOAM1.';
+     var NS = 'http://www.w3.org/2000/svg';
+
+     // ---------- Weather table ----------
+     // Daily odds: Sunny 55, Rain 20, Storm 10, Frost 7, Golden Hour 3, Ember 5
+     var WEATHERS = [
+       { key: 'sunny',  name: 'Sunny',       icon: '\u2600\uFE0F', pct: 55, tint: 'rgba(0,0,0,0)', say: '' },
+       { key: 'rain',   name: 'Rain',        icon: '\uD83C\uDF27\uFE0F', pct: 20, tint: 'rgba(70,120,210,0.24)', say: "It's raining",
+         mark: 'rain',   chance: 0.6, msg: 'Your rose is Rain-kissed!' },
+       { key: 'storm',  name: 'Storm',       icon: '\u26C8\uFE0F', pct: 10, tint: 'rgba(20,28,60,0.38)', say: "There's a storm",
+         mark: 'storm',  chance: 0.4, msg: 'Lightning struck your rose!' },
+       { key: 'frost',  name: 'Frost',       icon: '\u2744\uFE0F', pct: 7,  tint: 'rgba(215,238,255,0.40)', say: "It's frosty",
+         mark: 'frost',  chance: 0.5, msg: 'Your rose is Frost-touched!' },
+       { key: 'golden', name: 'Golden Hour', icon: '\uD83C\uDF05', pct: 3,  tint: 'rgba(255,196,60,0.30)', say: "It's Golden Hour",
+         mark: 'golden', chance: 0.8, msg: 'Your rose turned Golden!' },
+       { key: 'ember',  name: 'Ember',       icon: '\uD83D\uDD25', pct: 5,  tint: 'rgba(255,100,20,0.28)', say: "There's an ember heatwave",
+         mark: 'ember',  chance: 0.5, msg: 'Your rose is an Ember rose!' }
+     ];
+     var MARK_MSG = {};
+     WEATHERS.forEach(function (w) { if (w.mark) MARK_MSG[w.mark] = w.msg; });
+
+     // ---------- Stacking effects: names and value MULTIPLIERS ----------
+     // Each effect MULTIPLIES the running value, so single-effect prices stay
+     // exactly the locked ones (Classic 20, Rain 30, Lightning 50, Frost 60,
+     // Ember 80, Golden 100) while stacked roses climb fast: a Rainbow rose
+     // (all five) is 20 x 1.5 x 2.5 x 3 x 4 x 5 = 4500.
+     var EFFECTS = {
+       rain:   { label: 'Rain-kissed',      mult: 1.5 },
+       storm:  { label: 'Lightning-struck', mult: 2.5 },
+       frost:  { label: 'Frost-touched',    mult: 3 },
+       ember:  { label: 'Ember',            mult: 4 },
+       golden: { label: 'Golden',           mult: 5 }
+     };
+     var EFFECT_KEYS = ['rain', 'storm', 'frost', 'ember', 'golden'];
+     var BASE_VALUE = 20;
+
+     function isRainbow(fx) { return fx.length >= EFFECT_KEYS.length; }
+     // one number for the whole game: selling, the tooltip, and the shop reveal all use this
+     function roseValue(fx) {
+       var v = BASE_VALUE;
+       fx.forEach(function (k) { v *= EFFECTS[k].mult; });
+       return Math.round(v);
+     }
+     function roseName(fx) {
+       if (isRainbow(fx)) return 'Rainbow rose';
+       if (!fx.length) return 'Classic rose';
+       return fx.map(function (k) { return EFFECTS[k].label; }).join(' ') + ' rose';
+     }
+
+     function hashDay(str) {
+       var h = 2166136261;
+       for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+       h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b);
+       h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35);
+       h ^= h >>> 16;
+       return (h >>> 0) % 100;
+     }
+     function dateString(d) {
+       var m = d.getMonth() + 1, day = d.getDate();
+       return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+     }
+     function todayString() { return dateString(new Date()); }
+     function dayStart(s) { var a = s.split('-'); return new Date(+a[0], +a[1] - 1, +a[2], 0, 0, 0).getTime(); }
+     function weatherForDate(s) {
+       var n = hashDay(s), sum = 0;
+       for (var i = 0; i < WEATHERS.length; i++) {
+         sum += WEATHERS[i].pct;
+         if (n < sum) return WEATHERS[i];
+       }
+       return WEATHERS[0];
+     }
+     function weatherForToday() { return weatherForDate(todayString()); }
+
+     // ---------- Build the bed ----------
+     var layout = [2, 3, 2, 3];
+     var rowsEl = document.getElementById('rows');
+     var mounds = [];
+     var idx = 0;
+     layout.forEach(function (count, r) {
+       var depth = r * 4 / (layout.length - 1);
+       var row = document.createElement('div');
+       row.className = 'row';
+       row.style.setProperty('--r', depth);
+       for (var c = 0; c < count; c++) {
+         var m = document.createElement('div');
+         m.className = 'mound';
+         m.setAttribute('role', 'button');
+         m.setAttribute('tabindex', '0');
+         m.setAttribute('aria-label', 'Empty soil mound');
+         m.dataset.i = idx;
+         m.style.setProperty('--r', depth);
+         m.style.setProperty('--d', (0.45 + (r + c) * 0.07) + 's');
+         row.appendChild(m);
+         mounds.push(m);
+         idx++;
+       }
+       rowsEl.appendChild(row);
+     });
+
+     // ---------- Toast ----------
+     var toastEl = document.getElementById('toast');
+     var toastQueue = [];
+     var toastBusy = false;
+     function runToast() {
+       if (toastBusy || !toastQueue.length || !document.body.classList.contains('garden-on')) return;
+       toastBusy = true;
+       toastEl.textContent = toastQueue.shift();
+       toastEl.classList.add('show');
+       setTimeout(function () { toastEl.classList.remove('show'); }, 4000);
+       setTimeout(function () { toastBusy = false; runToast(); }, 4500);
+     }
+     function showToast(text) { toastQueue.push(text); runToast(); }
+
+     // ---------- Enter the garden ----------
+     var titleScreen  = document.getElementById('titleScreen');
+     var gardenScreen = document.getElementById('gardenScreen');
+     document.getElementById('enterBtn').addEventListener('click', function () {
+       document.body.classList.add('garden-on');
+       titleScreen.setAttribute('aria-hidden', 'true');
+       gardenScreen.setAttribute('aria-hidden', 'false');
+       setTimeout(runToast, 900);
+     });
+
+     // ---------- Plant drawings ----------
+     var ART = [
+       '<svg viewBox="0 0 40 24" aria-hidden="true">' +
+         '<ellipse cx="20" cy="13" rx="8.5" ry="6" fill="#b5483a" transform="rotate(-12 20 13)"/>' +
+         '<ellipse cx="17.5" cy="10.5" rx="3" ry="1.8" fill="#e8897b" opacity="0.75"/>' +
+         '<path d="M3 24 Q8 15 20 16.5 Q32 15 37 24 Z" fill="#cf975c"/>' +
+       '</svg>',
+       '<svg viewBox="0 0 40 48" aria-hidden="true">' +
+         '<path d="M20 45 L20 22" stroke="#4e9a35" stroke-width="3.2" stroke-linecap="round" fill="none"/>' +
+         '<path d="M20 27 C10 25 5 17 7 9 C16 9 21 16 20 27 Z" fill="#6cc04a"/>' +
+         '<path d="M20 27 C30 25 35 17 33 9 C24 9 19 16 20 27 Z" fill="#58ab3a"/>' +
+         '<ellipse cx="20" cy="46" rx="11" ry="3" fill="#cf975c"/>' +
+       '</svg>'
+     ];
+
+     // ---------- Decoration pieces ----------
+     function halo(rgb) {
+       return '<circle class="twinkle" style="animation-duration:2.4s" cx="30" cy="28" r="31" fill="rgba(' + rgb + ',0.14)"/>' +
+              '<circle cx="30" cy="28" r="25" fill="rgba(' + rgb + ',0.18)"/>' +
+              '<circle cx="30" cy="28" r="19" fill="rgba(' + rgb + ',0.22)"/>';
+     }
+     function drop(x, y, r) {
+       var dl = ((x * 7 + y * 3) % 10) * 0.16;
+       return '<g class="drip" style="animation-delay:-' + dl.toFixed(2) + 's">' +
+              '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="rgba(200,230,255,0.88)" stroke="#4f8fc9" stroke-width="0.7"/>' +
+              '<circle cx="' + (x - r * 0.35) + '" cy="' + (y - r * 0.4) + '" r="' + (r * 0.35) + '" fill="#fff"/></g>';
+     }
+     function bolt(x, y, s, delay) {
+       return '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')">' +
+         '<path class="twinkle" style="animation-delay:' + delay + 's;animation-duration:.35s" d="M1 -6 L-3 1 L0 1 L-1.5 7 L3.5 -1.5 L0.5 -1.5 Z" fill="#fff36b" stroke="#c98a00" stroke-width="0.7"/></g>';
+     }
+     function spark(x, y, s, delay, fill) {
+       return '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')">' +
+         '<path class="twinkle" style="animation-delay:' + delay + 's" d="M0 -3 L0.8 -0.8 L3 0 L0.8 0.8 L0 3 L-0.8 0.8 L-3 0 L-0.8 -0.8 Z" fill="' + fill + '"/></g>';
+     }
+     function crystal(x, y, r, delay) {
+       var a = r * 0.5, b = r * 0.866;
+       var d = 'M' + (x - r) + ' ' + y + ' L' + (x + r) + ' ' + y +
+               ' M' + (x - a) + ' ' + (y - b) + ' L' + (x + a) + ' ' + (y + b) +
+               ' M' + (x - a) + ' ' + (y + b) + ' L' + (x + a) + ' ' + (y - b);
+       return '<g class="shimmer" style="animation-delay:-' + (delay || 0) + 's">' +
+              '<path d="' + d + '" stroke="#6fa3c9" stroke-width="2.4" stroke-linecap="round" fill="none"/>' +
+              '<path d="' + d + '" stroke="#ffffff" stroke-width="1.1" stroke-linecap="round" fill="none"/></g>';
+     }
+     function flame(x, y, s, delay) {
+       return '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')">' +
+         '<g class="twinkle" style="animation-delay:' + delay + 's;animation-duration:.55s">' +
+         '<path d="M0 -6 C3 -3 3 0 0 2 C-3 0 -3 -3 0 -6 Z" fill="#ff9d1c"/>' +
+         '<path d="M0 -3 C1.4 -1.8 1.4 -0.2 0 0.8 C-1.4 -0.2 -1.4 -1.8 0 -3 Z" fill="#fff0a0"/></g></g>';
+     }
+     function rainbowRing() {
+       var cols = ['#ff4d4d', '#ff9b3d', '#ffe14d', '#4fd66a', '#4aa8ff', '#a066ff'], s = '';
+       for (var i = 0; i < cols.length; i++) {
+         s += '<circle cx="30" cy="28" r="35" fill="none" stroke="' + cols[i] + '" stroke-width="3" stroke-dasharray="36.6 183" stroke-dashoffset="' + (-36.6 * i).toFixed(1) + '" opacity="0.85"/>';
+       }
+       return '<g class="spin">' + s + '</g>';
+     }
+
+     // Each effect only ADDS decoration: b = behind the rose, f = in front of it.
+     var FXART = {
+       rain: { b: '', f:
+         '<ellipse cx="22" cy="19" rx="3.2" ry="6" fill="#fff" opacity="0.5" transform="rotate(-30 22 19)"/>' +
+         '<ellipse cx="38" cy="24" rx="2" ry="4" fill="#fff" opacity="0.35" transform="rotate(25 38 24)"/>' +
+         drop(18, 22, 2.2) + drop(41, 20, 2) + drop(30, 12, 1.8) +
+         drop(23, 37, 2.2) + drop(38, 36, 2) + drop(30, 30, 1.6) + drop(16, 72, 1.8) },
+       storm: { b: '', f:
+         bolt(2, 20, 1.1, 0) + bolt(58, 18, 1, 0.3) + bolt(3, 40, 0.9, 0.6) + bolt(57, 42, 0.9, 0.45) +
+         spark(30, -4, 1, 0.2, '#fff6b8') + spark(14, 2, 0.8, 0.7, '#fff6b8') + spark(46, 2, 0.8, 0.5, '#fff6b8') },
+       frost: { b: '', f:
+         crystal(9, 30, 3.6, 0) + crystal(51, 30, 3.6, 0.7) + crystal(20, 7, 3, 1.2) + crystal(40, 7, 3, 0.2) +
+         crystal(14, 46, 3, 0.4) + crystal(46, 46, 3, 1.6) + crystal(38, 60, 2.6, 0.9) },
+       golden: { b: halo('255,214,80'), f:
+         spark(1, 8, 1, 0, '#fff6c2') + spark(59, 12, 0.9, 0.4, '#fff6c2') + spark(4, 54, 0.8, 0.7, '#fff6c2') +
+         spark(56, 52, 1, 0.2, '#fff6c2') + spark(30, -9, 0.8, 0.55, '#fff6c2') },
+       ember: { b: halo('255,110,20'), f:
+         flame(12, 2, 1, 0) + flame(48, 2, 1, 0.3) + flame(-1, 44, 0.9, 0.5) + flame(61, 44, 0.9, 0.65) + flame(22, 49, 0.8, 0.15) },
+       rainbow: { b: rainbowRing(), f:
+         spark(-3, 28, 1.1, 0, '#ff6b6b') + spark(63, 28, 1.1, 0.3, '#6bd0ff') + spark(16, -6, 0.9, 0.6, '#7dff8a') +
+         spark(44, -6, 0.9, 0.15, '#ffd45e') + spark(30, 55, 0.9, 0.45, '#c79bff') }
+     };
+
+     // base rose: always the same classic red. Effects are layered into .fxb / .fxf
+     function roseSVG() {
+       return '<svg viewBox="0 0 60 112" aria-hidden="true"><g class="fxb"></g>' +
+         '<path d="M30 108 C28 88 32 64 30 44" stroke="#3f8f2e" stroke-width="3.6" stroke-linecap="round" fill="none"/>' +
+         '<path d="M29.5 88 C15 88 7 78 7 67 C20 67 29 75 29.5 88 Z" fill="#5cb23f"/>' +
+         '<path d="M29.5 86 C22 82 15 76 11 70" stroke="#3f8f2e" stroke-width="1" fill="none" opacity="0.6"/>' +
+         '<path d="M30.5 72 C45 72 53 62 53 51 C40 51 31 59 30.5 72 Z" fill="#4fa335"/>' +
+         '<path d="M30.5 70 C38 66 45 60 49 54" stroke="#3a7f29" stroke-width="1" fill="none" opacity="0.6"/>' +
+         '<ellipse cx="30" cy="109" rx="14" ry="3.5" fill="#cf975c"/>' +
+         '<path d="M21 40 L30 49 L39 40 L34 44.5 L30 42 L26 44.5 Z" fill="#3f8f2e"/>' +
+         '<ellipse cx="20.5" cy="30" rx="11" ry="12" fill="#b3174f"/>' +
+         '<ellipse cx="39.5" cy="30" rx="11" ry="12" fill="#b3174f"/>' +
+         '<ellipse cx="30" cy="21" rx="12" ry="11" fill="#d81b60"/>' +
+         '<path d="M15 30 C15 46 45 46 45 30 C45 24 15 24 15 30 Z" fill="#d81b60"/>' +
+         '<circle cx="30" cy="27" r="8.5" fill="#e63b78"/>' +
+         '<path d="M25 28 C25 21 35 21 35 28 C35 32 28 32 28 28 C28 25.5 32 25.5 32 28" stroke="#a3104a" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
+         '<ellipse cx="23.5" cy="21" rx="4.5" ry="2.6" fill="#f48fb1" opacity="0.7"/>' +
+         '<g class="fxf"></g></svg>';
+     }
+
+     function addLayer(svg, key, pop, preview) {
+       var d = FXART[key];
+       if (!d) return;
+       ['b', 'f'].forEach(function (part) {
+         if (!d[part]) return;
+         var host = svg.querySelector(part === 'b' ? '.fxb' : '.fxf');
+         if (!host) return;
+         var g = document.createElementNS(NS, 'g');
+         g.setAttribute('data-fx', key);
+         if (preview) g.setAttribute('data-prev', '1');
+         if (pop) g.setAttribute('class', 'fxpop');
+         g.innerHTML = d[part];
+         host.appendChild(g);
+       });
+     }
+
+     // brings a rose's decorations in line with its real effects (+ the Next weather preview) without redrawing the rose
+     function syncLayers(el, p, pop) {
+       var svg = el.querySelector('svg');
+       if (!svg) return;
+       var want = {};
+       p.effects.forEach(function (k) { want[k] = 0; });
+       if (isRainbow(p.effects)) want.rainbow = 0;
+       if (previewOn && shown.mark && want[shown.mark] === undefined) want[shown.mark] = 1;
+       Array.prototype.slice.call(svg.querySelectorAll('[data-fx]')).forEach(function (g) {
+         var k = g.getAttribute('data-fx');
+         if (want[k] === undefined) g.remove();
+         else if (want[k] === 0) g.removeAttribute('data-prev');
+       });
+       Object.keys(want).forEach(function (k) {
+         if (!svg.querySelector('[data-fx="' + k + '"]')) addLayer(svg, k, pop, want[k] === 1);
+       });
+       if (want.storm !== undefined) el.dataset.look = 'storm';
+       else if (want.ember !== undefined) el.dataset.look = 'ember';
+       else el.removeAttribute('data-look');
+     }
+
+     // ---------- Animated weather ----------
+     var skyFx = document.getElementById('skyFx');
+     var fxEl  = document.getElementById('fx');
+     var reduceMq = window.matchMedia('(prefers-reduced-motion: reduce)');
+     var smallMq  = window.matchMedia('(max-width: 600px)');
+     var narrowMq = window.matchMedia('(max-width: 699px)');   // phones: the shop becomes a button + panel
+
+     function rnd(a, b) { return a + Math.random() * (b - a); }
+
+     function addParticles(n, cls, setup) {
+       var frag = document.createDocumentFragment();
+       for (var i = 0; i < n; i++) {
+         var el = document.createElement('i');
+         el.className = 'p ' + cls;
+         setup(el);
+         frag.appendChild(el);
+       }
+       fxEl.appendChild(frag);
+     }
+
+     function applyFx(w) {
+       skyFx.innerHTML = '';
+       fxEl.innerHTML = '';
+       var k = w.key;
+       var scale = smallMq.matches ? 0.6 : 1;
+       var still = reduceMq.matches;
+
+       if (k === 'sunny') {
+         skyFx.innerHTML = '<div class="rays"></div>';
+       } else if (k === 'golden') {
+         skyFx.innerHTML = '<div class="glow-warm"></div><div class="rays golden"></div>';
+       } else if (k === 'rain') {
+         skyFx.innerHTML = '<div class="overcast"></div>';
+       } else if (k === 'storm') {
+         skyFx.innerHTML =
+           '<div class="storm-dark"></div><div class="flash"></div>' +
+           '<div class="bolt" id="bolt"><svg viewBox="0 0 60 160" preserveAspectRatio="none" aria-hidden="true">' +
+           '<path d="M40 0 L14 78 L30 78 L8 160 L48 62 L30 62 L52 0 Z" fill="#fff" stroke="rgba(190,210,255,0.9)" stroke-width="2"/></svg></div>';
+         var bolt = document.getElementById('bolt');
+         bolt.style.left = rnd(8, 75) + '%';
+         bolt.addEventListener('animationiteration', function () { bolt.style.left = rnd(8, 75) + '%'; });
+       }
+
+       if (still) return;
+
+       if (k === 'rain' || k === 'storm') {
+         var heavy = k === 'storm';
+         addParticles(Math.round((heavy ? 48 : 34) * scale), heavy ? 'drop heavy' : 'drop', function (el) {
+           var t = heavy ? rnd(0.5, 0.8) : rnd(0.7, 1.1);
+           el.style.left = rnd(0, 125) + '%';
+           el.style.opacity = rnd(0.4, 0.9).toFixed(2);
+           el.style.setProperty('--t', t.toFixed(2) + 's');
+           el.style.setProperty('--dl', (-rnd(0, t)).toFixed(2) + 's');
+           el.style.setProperty('--h', Math.round(rnd(12, 22)) + 'px');
+         });
+       } else if (k === 'frost') {
+         addParticles(Math.round(26 * scale), 'flake', function (el) {
+           var t = rnd(7, 12);
+           el.style.left = rnd(0, 100) + '%';
+           el.style.opacity = rnd(0.5, 1).toFixed(2);
+           el.style.setProperty('--s', rnd(3, 7).toFixed(1) + 'px');
+           el.style.setProperty('--sw', Math.round(rnd(-30, 30)) + 'px');
+           el.style.setProperty('--t', t.toFixed(1) + 's');
+           el.style.setProperty('--dl', (-rnd(0, t)).toFixed(1) + 's');
+         });
+       } else if (k === 'ember') {
+         addParticles(Math.round(22 * scale), 'ember', function (el) {
+           var t = rnd(4.5, 8);
+           el.style.left = rnd(2, 98) + '%';
+           el.style.setProperty('--s', rnd(3, 6.5).toFixed(1) + 'px');
+           el.style.setProperty('--dx', Math.round(rnd(-40, 40)) + 'px');
+           el.style.setProperty('--t', t.toFixed(1) + 's');
+           el.style.setProperty('--dl', (-rnd(0, t)).toFixed(1) + 's');
+         });
+       }
+     }
+
+     // ---------- Game state ----------
+     var seeds = 1;
+     var coins = 50;
+     var selectedRose = null;
+     var seedSelected = false;
+     var plants = {};          // mound index -> { plantedAt: ms, effects: ['rain', 'storm', ...] (in the order they landed) }
+     var lastRoll = null;      // date string (YYYY-MM-DD) of the last day effects were rolled
+     var lastSavedAt = null;   // ms timestamp of the last successful save
+     var everSaved = false;
+
+     var realWeather = weatherForToday();
+     var shown = realWeather;
+     var previewOn = false;
+
+     var bedEl   = document.getElementById('bed');
+     var slotEl  = document.getElementById('roseSlot');
+     var countEl = document.getElementById('seedCount');
+     var hintEl  = document.getElementById('packetHint');
+     var coinCountEl = document.getElementById('coinCount');
+     var buySeedBtn = document.getElementById('buySeedBtn');
+     var floristDock = document.getElementById('floristDock');
+     var shopTab = document.getElementById('shopTab');
+     var shopClose = document.getElementById('shopClose');
+     var roseTooltip = document.getElementById('roseTooltip');
+     var dragGhost = document.getElementById('dragGhost');
+     var dragState = null;
+     var suppressRoseClick = false;
+     var tooltipIdx = null;
+     var shopOpen = false;
+
+     // ---------- Save / load ----------
+     // one validator is used by BOTH loading and importing, so a bad code can never get in
+     function parseSave(d) {
+       try {
+         if (!d || typeof d !== 'object' || !Number.isInteger(d.seeds) || d.seeds < 0 || d.seeds > 999) return null;
+         if (!d.plants || typeof d.plants !== 'object' || Array.isArray(d.plants)) return null;
+         var out = {}, now = Date.now();
+         var keys = Object.keys(d.plants);
+         for (var n = 0; n < keys.length; n++) {
+           var k = keys[n];
+           if (!/^\d+$/.test(k)) return null;
+           var i = Number(k);
+           if (i >= mounds.length) return null;
+           var p = d.plants[k];
+           if (!p || typeof p.plantedAt !== 'number' || !isFinite(p.plantedAt)) return null;
+           var fx = [];
+           if (Array.isArray(p.effects)) {
+             for (var e = 0; e < p.effects.length; e++) {
+               var ek = p.effects[e];
+               if (!Object.prototype.hasOwnProperty.call(EFFECTS, ek)) return null;
+               if (fx.indexOf(ek) < 0) fx.push(ek);
+             }
+           } else if (p.mark != null) {
+             // old save: convert the single mark into an effects list
+             if (p.mark !== 'classic' && !Object.prototype.hasOwnProperty.call(EFFECTS, p.mark)) return null;
+             if (p.mark !== 'classic') fx.push(p.mark);
+           }
+           out[i] = { plantedAt: Math.min(p.plantedAt, now), effects: fx };
+         }
+         return {
+           seeds: d.seeds, plants: out,
+           coins: Number.isInteger(d.coins) && d.coins >= 0 && d.coins <= 999999999 ? d.coins : 50,
+           lastRoll: typeof d.lastRoll === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d.lastRoll) ? d.lastRoll : null,
+           savedAt: typeof d.savedAt === 'number' && isFinite(d.savedAt) && d.savedAt > 0 ? d.savedAt : null
+         };
+       } catch (e) { return null; }
+     }
+
+     function loadGame() {
+       try {
+         var raw = localStorage.getItem(SAVE_KEY);
+         if (!raw) return null;
+         return parseSave(JSON.parse(raw));
+       } catch (e) { return null; }
+     }
+
+     var savedFlash = document.getElementById('savedFlash');
+     var flashTimer = null;
+     function flashSaved(ok) {
+       savedFlash.textContent = ok ? '\u2713 Saved' : '\u26A0 Not saved';
+       savedFlash.classList.toggle('warn', !ok);
+       savedFlash.classList.add('show');
+       clearTimeout(flashTimer);
+       flashTimer = setTimeout(function () { savedFlash.classList.remove('show'); }, 1300);
+     }
+
+     function saveGame() {
+       var ok = false;
+       try {
+         var ts = Date.now();
+         localStorage.setItem(SAVE_KEY, JSON.stringify({ seeds: seeds, plants: plants, coins: coins, lastRoll: lastRoll, savedAt: ts }));
+         lastSavedAt = ts;
+         everSaved = true;
+         ok = true;
+       } catch (e) { /* storage unavailable: the game still works, it just can't save */ }
+       flashSaved(ok);
+       refreshLastSaved();
+       return ok;
+     }
+
+     // ---------- Coins, shop and selling ----------
+     function updateCoins() {
+       coinCountEl.textContent = coins;
+       buySeedBtn.disabled = coins < 10;
+     }
+
+     function hideSellBar() { selectedRose = null; }
+     function showSellBar(index) { selectedRose = String(index); }
+
+     // whatever is currently "the shop": the building, or on phones the Shop button (or the open panel)
+     function shopEl() { return (narrowMq.matches && !shopOpen) ? shopTab : floristDock; }
+
+     function coinPop(text) {
+       var tgt = shopEl();
+       var r = tgt.getBoundingClientRect();
+       var el = document.createElement('div');
+       el.className = 'coin-pop';
+       el.textContent = text;
+       el.style.left = Math.max(48, r.left + r.width / 2) + 'px';
+       el.style.top = (r.top + r.height * 0.55) + 'px';
+       document.body.appendChild(el);
+       setTimeout(function () { el.remove(); }, 1400);
+       tgt.classList.remove('sold');
+       void tgt.offsetWidth;
+       tgt.classList.add('sold');
+     }
+
+     function sellRoseAt(index) {
+       var p = plants[index];
+       if (!p || stageOf(p) !== 2) { hideSellBar(); return false; }
+       var name = roseName(p.effects), value = roseValue(p.effects);
+       delete plants[index];
+       var mound = mounds[index];
+       var plantEl = mound.querySelector('.plant');
+       if (plantEl) plantEl.remove();
+       mound.classList.remove('has-plant', 'rose-draggable', 'dragging-rose');
+       mound.setAttribute('aria-label', 'Empty soil mound');
+       mound.removeAttribute('title');
+       coins += value;
+       hideSellBar();
+       hideRoseTooltip();
+       updateCoins();
+       saveGame();
+       // the amount is revealed at the sale
+       coinPop('+' + value + ' 🪙');
+       showToast('Sold ' + name + ' for ' + value + ' coins!');
+       return true;
+     }
+
+     buySeedBtn.addEventListener('click', function () {
+       if (coins < 10) return;
+       coins -= 10;
+       seeds++;
+       updateCoins();
+       updatePacket();
+       saveGame();
+       showToast('Bought a rose seed!');
+     });
+
+     // ---------- Phone shop panel ----------
+     function setShopOpen(v) {
+       shopOpen = !!v && narrowMq.matches;
+       floristDock.classList.toggle('open', shopOpen);
+       document.body.classList.toggle('shop-open', shopOpen);
+       shopTab.setAttribute('aria-expanded', shopOpen ? 'true' : 'false');
+     }
+     shopTab.addEventListener('click', function () { setShopOpen(true); });
+     shopClose.addEventListener('click', function () { setShopOpen(false); });
+     function onNarrowChange() { setShopOpen(false); }
+     if (narrowMq.addEventListener) narrowMq.addEventListener('change', onNarrowChange);
+     else if (narrowMq.addListener) narrowMq.addListener(onNarrowChange);
+
+     // ---------- Rose tooltip + drag-to-sell ----------
+     function roseEmoji(fx) {
+       if (isRainbow(fx)) return '🌈';
+       var last = fx[fx.length - 1];
+       return last === 'golden' ? '🌼' : last === 'frost' ? '🥀' : last === 'ember' ? '🌺' : '🌹';
+     }
+     // hovering a plant shows its effects AND what it is worth
+     function tooltipMarkup(index) {
+       var p = plants[index];
+       if (!p) return '';
+       var stage = stageOf(p);
+       var ageMinutes = Math.max(0, Math.floor((Date.now() - p.plantedAt) / 60000));
+       var planted = '<div>Planted ' + (ageMinutes < 1 ? 'less than a minute ago' : ageMinutes + ' min ago') + '</div>';
+       if (stage < 2) {
+         return '<strong>Growing rose</strong><div>Stage: ' + (stage === 0 ? 'Seedling · still underground' : 'Sprout · growing') + '</div>' + planted +
+           '<div class="tip-story">Only fully grown roses gain weather effects. Let it bloom first.</div>';
+       }
+       var fx = p.effects;
+       var lines = !fx.length ? 'No weather effects yet.'
+         : fx.map(function (k) { return '• ' + EFFECTS[k].label; }).join('<br>');
+       if (isRainbow(fx)) lines += '<br>🌈 All five effects: a Rainbow rose!';
+       return '<strong>' + roseName(fx) + '</strong>' +
+         '<div>Stage: Fully bloomed · ready to sell</div>' + planted +
+         '<div class="tip-story"><b>Effects</b><br>' + lines + '</div>' +
+         '<div style="margin-top:6px"><b>Worth: ' + roseValue(fx) + ' coins</b></div>' +
+         '<div style="margin-top:6px">Drag this bloom to the <b>Shop</b> to sell it.</div>';
+     }
+     function placeTooltip(x, y) {
+       var pad = 12;
+       var rect = roseTooltip.getBoundingClientRect();
+       var left = Math.min(window.innerWidth - rect.width - pad, Math.max(pad, x + 16));
+       var top = y + rect.height + 18 > window.innerHeight ? Math.max(pad, y - rect.height - 14) : y + 14;
+       roseTooltip.style.left = left + 'px';
+       roseTooltip.style.top = top + 'px';
+     }
+     function showRoseTooltip(index, x, y) {
+       if (!plants[index]) return;
+       tooltipIdx = String(index);
+       roseTooltip.innerHTML = tooltipMarkup(index);
+       roseTooltip.classList.add('show');
+       placeTooltip(x, y);
+     }
+     function hideRoseTooltip() { roseTooltip.classList.remove('show'); tooltipIdx = null; }
+     function updateMoundRoseState(index) {
+       var m = mounds[index];
+       if (!m) return;
+       var p = plants[index];
+       if (p && stageOf(p) === 2) {
+         m.classList.add('rose-draggable');
+         m.setAttribute('aria-label', roseName(p.effects) + ', worth ' + roseValue(p.effects) + ' coins. Drag to the Shop to sell.');
+         m.title = roseName(p.effects) + ' · ' + roseValue(p.effects) + ' coins';
+       } else if (p) {
+         m.classList.remove('rose-draggable');
+         m.setAttribute('aria-label', stageOf(p) === 0 ? 'Rose seedling' : 'Rose sprout');
+         m.title = 'Growing rose · hover for status';
+       } else {
+         m.classList.remove('rose-draggable');
+         m.setAttribute('aria-label', 'Empty soil mound');
+         m.removeAttribute('title');
+       }
+     }
+
+     function hit(el, x, y, pad) {
+       var r = el.getBoundingClientRect();
+       if (!r.width || !r.height) return false;
+       pad = pad || 0;
+       return x >= r.left - pad && x <= r.right + pad && y >= r.top - pad && y <= r.bottom + pad;
+     }
+     // wide screens: the building. Phones: the Shop button (or the panel while it is open)
+     function overShop(x, y) {
+       if (narrowMq.matches) return shopOpen ? hit(floristDock, x, y, 0) : hit(shopTab, x, y, 14);
+       return hit(floristDock, x, y, 0);
+     }
+     function setShopHover(over) {
+       var narrow = narrowMq.matches;
+       floristDock.classList.toggle('drag-over', over && (!narrow || shopOpen));
+       shopTab.classList.toggle('drag-over', over && narrow && !shopOpen);
+     }
+
+     function beginRoseDrag(index, x, y) {
+       var p = plants[index];
+       if (!p || stageOf(p) !== 2 || seedSelected) return;
+       dragState = { index: String(index), startX: x, startY: y, x: x, y: y, active: false };
+     }
+     function moveRoseDrag(x, y) {
+       if (!dragState) return;
+       dragState.x = x; dragState.y = y;
+       if (!dragState.active && Math.hypot(x - dragState.startX, y - dragState.startY) > 8) {
+         dragState.active = true;
+         var m = mounds[Number(dragState.index)];
+         m.classList.add('dragging-rose');
+         dragGhost.style.display = 'block';
+         dragGhost.textContent = roseEmoji(plants[dragState.index] ? plants[dragState.index].effects : []);
+         hideRoseTooltip();
+         hideSellBar();
+       }
+       if (dragState.active) {
+         dragGhost.style.left = x + 'px'; dragGhost.style.top = y + 'px';
+         setShopHover(overShop(x, y));      // highlight only; the shop never names a price
+       }
+     }
+     function finishRoseDrag(x, y) {
+       if (!dragState) return;
+       var state = dragState;
+       dragState = null;
+       var m = mounds[Number(state.index)];
+       if (m) m.classList.remove('dragging-rose');
+       dragGhost.style.display = 'none';
+       setShopHover(false);
+       if (!state.active) return;
+       suppressRoseClick = true;
+       setTimeout(function () { suppressRoseClick = false; }, 80);
+       if (overShop(x, y)) sellRoseAt(Number(state.index));
+       else showToast(narrowMq.matches && !shopOpen ? 'Drop the rose onto the Shop button to sell it.' : 'Drop the rose into the Shop to sell it.');
+     }
+     rowsEl.addEventListener('pointerdown', function (e) {
+       var m = e.target.closest('.mound');
+       if (!m) return;
+       beginRoseDrag(Number(m.dataset.i), e.clientX, e.clientY);
+     });
+     window.addEventListener('pointermove', function (e) { if (dragState) moveRoseDrag(e.clientX, e.clientY); });
+     window.addEventListener('pointerup', function (e) { if (dragState) finishRoseDrag(e.clientX, e.clientY); });
+     window.addEventListener('pointercancel', function () { if (dragState) finishRoseDrag(-999, -999); });
+     rowsEl.addEventListener('pointerover', function (e) {
+       var m = e.target.closest('.mound');
+       if (!m || m.contains(e.relatedTarget)) return;
+       var i = Number(m.dataset.i);
+       if (plants[i] && !dragState) showRoseTooltip(i, e.clientX, e.clientY);
+     });
+     rowsEl.addEventListener('pointermove', function (e) {
+       var m = e.target.closest('.mound');
+       if (!m || !plants[Number(m.dataset.i)] || dragState) return;
+       showRoseTooltip(Number(m.dataset.i), e.clientX, e.clientY);
+     });
+     rowsEl.addEventListener('pointerout', function (e) {
+       var m = e.target.closest('.mound');
+       if (m && !m.contains(e.relatedTarget)) hideRoseTooltip();
+     });
+
+     // ---------- Packet ----------
+     function updatePacket() {
+       countEl.textContent = seeds;
+       slotEl.classList.toggle('empty', seeds === 0);
+       slotEl.setAttribute('aria-pressed', seedSelected && seeds > 0 ? 'true' : 'false');
+       bedEl.classList.toggle('planting', seedSelected && seeds > 0);
+       if (seedSelected) hideSellBar();
+       if (seeds === 0)       hintEl.textContent = 'Packet empty';
+       else if (seedSelected) hintEl.textContent = 'Now tap a soil mound';
+       else                   hintEl.textContent = 'Rose seed: tap to select';
+     }
+
+     function stageOf(p) {
+       var age = Date.now() - p.plantedAt;
+       if (age < SEED_MS)   return 0;
+       if (age < SPROUT_MS) return 1;
+       return 2;
+     }
+
+     // ---------- "Come back" message ----------
+     function growingCount() {
+       var n = 0;
+       Object.keys(plants).forEach(function (k) { if (stageOf(plants[k]) < 2) n++; });
+       return n;
+     }
+     function comeBackMsg() {
+       var n = growingCount();
+       if (!n) return null;
+       if (!shown.say) {
+         return n === 1 ? 'Your rose is growing \u2014 come back later to see it bloom!'
+                        : 'Your roses are growing \u2014 come back later to see them bloom!';
+       }
+       return shown.say + ' \u2014 come back later to see your ' + (n === 1 ? 'bloom' : 'blooms') + '!';
+     }
+
+     // ---------- Stacking effect rolls ----------
+     // adds one effect to one fully grown rose; only the new decoration pops in (no re-render)
+     function addEffect(k, key, res) {
+       var p = plants[k];
+       p.effects.push(key);
+       res.gains[key] = (res.gains[key] || 0) + 1;
+       res.any = true;
+       if (isRainbow(p.effects)) res.rainbow++;
+       var el = mounds[k].querySelector('.plant');
+       if (el && el.dataset.stage === '2') syncLayers(el, p, true);
+       updateMoundRoseState(k);
+       if (tooltipIdx === String(k) && roseTooltip.classList.contains('show')) roseTooltip.innerHTML = tooltipMarkup(k);
+     }
+
+     // Rolls weather w for every fully grown rose that lacks it (and passes ok).
+     // Every rose makes its OWN independent roll, so some catch it and some don't.
+     function rollWeather(w, ok) {
+       var res = { gains: {}, rainbow: 0, any: false };
+       if (!w.mark) return res;
+       Object.keys(plants).forEach(function (k) {
+         var p = plants[k];
+         if (stageOf(p) !== 2 || p.effects.indexOf(w.mark) >= 0 || !ok(p)) return;
+         if (Math.random() < w.chance) addEffect(k, w.mark, res);
+       });
+       return res;
+     }
+
+     function announce(res, summary) {
+       var keys = EFFECT_KEYS.filter(function (k) { return res.gains[k]; });
+       if (summary && keys.length) {
+         var list = keys.map(function (k) { return EFFECTS[k].label + (res.gains[k] > 1 ? ' \u00D7' + res.gains[k] : ''); });
+         showToast('While you were away, your roses gained ' + list.join(', ') + '!');
+       } else {
+         keys.forEach(function (k) { showToast(MARK_MSG[k]); });
+       }
+       if (res.rainbow) showToast(res.rainbow > 1 ? 'Your roses became Rainbow roses!' : 'Your rose became a Rainbow rose!');
+     }
+
+     // roll for each day since the last roll (max 30), using each day's real date-weather
+     function catchUp(fromTick) {
+       var today = todayString();
+       if (lastRoll === today) return;
+       var a = lastRoll.split('-');
+       var d = new Date(+a[0], +a[1] - 1, +a[2], 12);
+       var days = [];
+       for (var n = 0; n < 1000; n++) {
+         d.setDate(d.getDate() + 1);
+         var s = dateString(d);
+         if (s > today) break;
+         days.push(s);
+       }
+       days = days.slice(-30);
+       var total = { gains: {}, rainbow: 0, any: false };
+       days.forEach(function (s) {
+         var t0 = dayStart(s);
+         var r = rollWeather(weatherForDate(s), function (p) { return p.plantedAt + SPROUT_MS <= t0; });
+         Object.keys(r.gains).forEach(function (k) { total.gains[k] = (total.gains[k] || 0) + r.gains[k]; });
+         total.rainbow += r.rainbow;
+         total.any = total.any || r.any;
+       });
+       lastRoll = today;
+       saveGame();
+       if (total.any) announce(total, !(fromTick && days.length <= 1));
+     }
+
+     // only redraws a plant when its STAGE changes; effects are layered in/out without a redraw
+     function renderPlants() {
+       Object.keys(plants).forEach(function (k) {
+         var p = plants[k];
+         var s = stageOf(p);
+         var el = mounds[k].querySelector('.plant');
+         updateMoundRoseState(k);
+         if (tooltipIdx === String(k) && roseTooltip.classList.contains('show')) roseTooltip.innerHTML = tooltipMarkup(k);
+
+         if (el.dataset.stage !== String(s)) {
+           el.dataset.stage = s;
+           el.className = 'plant s' + s;
+           el.innerHTML = s === 2 ? roseSVG() : ART[s];
+           el.style.animation = 'none';
+           void el.offsetWidth;
+           el.style.animation = '';
+         }
+         if (s === 2) syncLayers(el, p, false);
+         else el.removeAttribute('data-look');
+       });
+     }
+
+     function addPlantEl(m) {
+       var el = document.createElement('div');
+       el.className = 'plant';
+       m.appendChild(el);
+       m.classList.add('has-plant');
+       m.setAttribute('aria-label', 'Soil mound with a rose');
+     }
+
+     function plantAt(m) {
+       var i = m.dataset.i;
+       if (!seedSelected || seeds < 1 || plants[i]) return;
+       plants[i] = { plantedAt: Date.now(), effects: [] };
+       addPlantEl(m);
+       seeds--;
+       seedSelected = false;
+       updatePacket();
+       renderPlants();
+       saveGame();
+       var cb = comeBackMsg();
+       if (cb) showToast(cb);
+     }
+
+     // ---------- Weather display ----------
+     function applyWeather() {
+       document.getElementById('weatherIcon').textContent = shown.icon;
+       document.getElementById('weatherName').textContent = shown.name;
+       document.getElementById('weatherBadge').setAttribute('aria-label', "Today's weather: " + shown.name);
+       bedEl.style.setProperty('--tint', shown.tint);
+       applyFx(shown);
+       renderPlants();
+     }
+
+     slotEl.addEventListener('click', function () {
+       if (seeds < 1) return;
+       seedSelected = !seedSelected;
+       updatePacket();
+     });
+
+     rowsEl.addEventListener('click', function (e) {
+       if (suppressRoseClick) { e.preventDefault(); return; }
+       var m = e.target.closest('.mound');
+       if (!m) return;
+       var i = m.dataset.i;
+       if (seedSelected && seeds > 0) { plantAt(m); return; }
+       if (plants[i] && stageOf(plants[i]) === 2) {
+         if (selectedRose === String(i)) hideSellBar();
+         else showSellBar(i);
+       } else {
+         hideSellBar();
+       }
+     });
+     rowsEl.addEventListener('keydown', function (e) {
+       if (e.key !== 'Enter' && e.key !== ' ') return;
+       var m = e.target.closest('.mound');
+       if (m) {
+         e.preventDefault();
+         var i = m.dataset.i;
+         if (seedSelected && seeds > 0) plantAt(m);
+         else if (plants[i] && stageOf(plants[i]) === 2) {
+           if (selectedRose === String(i)) hideSellBar();
+           else showSellBar(i);
+         } else hideSellBar();
+       }
+     });
+
+     // ---------- Save panel: last saved, export, import ----------
+     var saveOverlay = document.getElementById('saveOverlay');
+     var lastSavedEl = document.getElementById('lastSavedText');
+     var exportBox = document.getElementById('exportBox');
+     var importBox = document.getElementById('importBox');
+     var importConfirm = document.getElementById('importConfirm');
+     var importConfirmText = document.getElementById('importConfirmText');
+     var saveMsg = document.getElementById('saveMsg');
+     var pendingImport = null;
+
+     function fmtTime(ts) {
+       try {
+         return new Date(ts).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit' });
+       } catch (e) { return new Date(ts).toString(); }
+     }
+     function refreshLastSaved() {
+       lastSavedEl.textContent = lastSavedAt ? fmtTime(lastSavedAt) : (everSaved ? 'earlier (time not recorded)' : 'not saved yet');
+     }
+     function setSaveMsg(text, kind) {
+       saveMsg.textContent = text || '';
+       saveMsg.className = 'save-msg' + (kind ? ' ' + kind : '');
+     }
+     function clearImportConfirm() {
+       pendingImport = null;
+       importConfirm.hidden = true;
+     }
+     function openSavePanel() {
+       refreshLastSaved();
+       setSaveMsg('');
+       clearImportConfirm();
+       exportBox.hidden = true;
+       saveOverlay.classList.add('open');
+       document.getElementById('saveClose').focus();
+     }
+     function closeSavePanel() {
+       saveOverlay.classList.remove('open');
+       clearImportConfirm();
+     }
+
+     // everything needed to rebuild the garden exactly: coins, seeds, plants (with effects), last roll date
+     function snapshot() { return { seeds: seeds, plants: plants, coins: coins, lastRoll: lastRoll }; }
+     function makeCode() { return CODE_PREFIX + btoa(JSON.stringify(snapshot())); }
+     function decodeCode(text) {
+       try {
+         var t = String(text).replace(/\s+/g, '');
+         if (t.indexOf(CODE_PREFIX) !== 0 || t.length > 200000) return null;
+         return parseSave(JSON.parse(atob(t.slice(CODE_PREFIX.length))));
+       } catch (e) { return null; }
+     }
+
+     // replaces the whole garden with an already-validated save
+     function applyState(s) {
+       mounds.forEach(function (m) {
+         var pe = m.querySelector('.plant');
+         if (pe) pe.remove();
+         m.classList.remove('has-plant', 'rose-draggable', 'dragging-rose');
+         m.setAttribute('aria-label', 'Empty soil mound');
+         m.removeAttribute('title');
+       });
+       seeds = s.seeds; coins = s.coins; plants = s.plants;
+       lastRoll = s.lastRoll || todayString();
+       seedSelected = false;
+       hideSellBar();
+       hideRoseTooltip();
+       Object.keys(plants).forEach(function (k) { addPlantEl(mounds[k]); });
+       updatePacket();
+       updateCoins();
+       renderPlants();
+     }
+
+     document.getElementById('saveBtn').addEventListener('click', openSavePanel);
+     document.getElementById('saveClose').addEventListener('click', closeSavePanel);
+     saveOverlay.addEventListener('click', function (e) { if (e.target === saveOverlay) closeSavePanel(); });
+
+     document.getElementById('saveNowBtn').addEventListener('click', function () {
+       if (saveGame()) setSaveMsg('Saved just now.', 'ok');
+       else setSaveMsg('This browser cannot store saves here. Use Export to keep a backup.', 'err');
+     });
+
+     document.getElementById('exportBtn').addEventListener('click', function () {
+       var code = makeCode();
+       exportBox.value = code;
+       exportBox.hidden = false;
+       function manual() {
+         exportBox.focus(); exportBox.select();
+         setSaveMsg('Could not copy automatically. Copy the code from the box below.', 'err');
+       }
+       if (navigator.clipboard && navigator.clipboard.writeText) {
+         navigator.clipboard.writeText(code).then(function () {
+           setSaveMsg('Save code copied to your clipboard.', 'ok');
+           showToast('Save code copied!');
+         }, manual);
+       } else manual();
+     });
+
+     importBox.addEventListener('input', clearImportConfirm);
+     document.getElementById('importBtn').addEventListener('click', function () {
+       clearImportConfirm();
+       if (!importBox.value.trim()) { setSaveMsg('Paste a save code first.', 'err'); return; }
+       var parsed = decodeCode(importBox.value);
+       if (!parsed) {
+         setSaveMsg('That save code is not valid. Nothing was changed.', 'err');
+         showToast('That save code is not valid. Your garden was not changed.');
+         return;
+       }
+       pendingImport = parsed;
+       var n = Object.keys(parsed.plants).length;
+       importConfirmText.textContent = 'Replace your current garden with this one (' + parsed.coins + ' coins, ' +
+         parsed.seeds + ' seeds, ' + n + (n === 1 ? ' plant' : ' plants') + ')? Your current garden will be lost.';
+       importConfirm.hidden = false;
+       setSaveMsg('');
+     });
+     document.getElementById('importNo').addEventListener('click', function () {
+       clearImportConfirm();
+       setSaveMsg('Import cancelled. Your garden was not changed.', '');
+     });
+     document.getElementById('importYes').addEventListener('click', function () {
+       if (!pendingImport) return;
+       var s = pendingImport;
+       clearImportConfirm();
+       applyState(s);
+       saveGame();
+       importBox.value = '';
+       closeSavePanel();
+       showToast('Garden restored from your save code!');
+       catchUp(false);               // roll any days the restored garden missed
+     });
+
+     document.addEventListener('keydown', function (e) {
+       if (e.key !== 'Escape') return;
+       if (saveOverlay.classList.contains('open')) closeSavePanel();
+       else if (shopOpen) setShopOpen(false);
+     });
+
+     // ---------- TEST buttons (remove later) ----------
+     // Next stage / Full bloom only move growth stages; they never touch effects, name or value
+     document.getElementById('nextStageBtn').addEventListener('click', function () {
+       Object.keys(plants).forEach(function (k) {
+         var s = stageOf(plants[k]);
+         if (s === 0) plants[k].plantedAt = Date.now() - SEED_MS;
+         else if (s === 1) plants[k].plantedAt = Date.now() - SPROUT_MS;
+       });
+       renderPlants();
+       saveGame();
+     });
+     document.getElementById('fullBloomBtn').addEventListener('click', function () {
+       Object.keys(plants).forEach(function (k) {
+         if (stageOf(plants[k]) < 2) plants[k].plantedAt = Date.now() - SPROUT_MS;
+       });
+       renderPlants();
+       saveGame();
+     });
+     // display-only: previews the shown weather's decoration on top of each rose's real effects; never saved
+     document.getElementById('nextWeatherBtn').addEventListener('click', function () {
+       shown = WEATHERS[(WEATHERS.indexOf(shown) + 1) % WEATHERS.length];
+       previewOn = true;
+       applyWeather();
+     });
+     // rolls the SHOWN weather's chance for every fully grown rose missing it (each rose rolls on its own; saves)
+     document.getElementById('applyWeatherBtn').addEventListener('click', function () {
+       if (!shown.mark) { showToast(shown.name + ' has no effect.'); return; }
+       var grown = Object.keys(plants).filter(function (k) { return stageOf(plants[k]) === 2; }).length;
+       if (!grown) { showToast('No fully grown roses yet.'); return; }
+       var res = rollWeather(shown, function () { return true; });
+       if (res.any) { announce(res, false); saveGame(); }
+       else showToast('No rose gained ' + EFFECTS[shown.mark].label + ' this time.');
+     });
+
+     // ---------- Start up ----------
+     var saved = loadGame();
+     if (saved) {
+       seeds = saved.seeds; plants = saved.plants; coins = saved.coins; lastRoll = saved.lastRoll;
+       lastSavedAt = saved.savedAt; everSaved = true;
+     }
+     if (!lastRoll) lastRoll = todayString();
+     Object.keys(plants).forEach(function (k) { addPlantEl(mounds[k]); });
+     updatePacket();
+     updateCoins();
+     refreshLastSaved();
+     applyWeather();
+     catchUp(false);                      // roll any days that were missed (max 30)
+     var welcomeMsg = comeBackMsg();
+     if (welcomeMsg) showToast(welcomeMsg);
+
+     // ---------- Re-check growth and the date ----------
+     function tick() {
+       var w = weatherForToday();
+       if (w !== realWeather) {
+         realWeather = w;
+         if (!previewOn) { shown = w; applyWeather(); }
+       }
+       catchUp(true);                     // midnight roll while the page is open
+       renderPlants();
+     }
+     setInterval(tick, CHECK_MS);
+     document.addEventListener('visibilitychange', tick);
+</script>
+</body>
+</html>

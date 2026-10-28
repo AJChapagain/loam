@@ -1,12 +1,14 @@
 # LOAM — Game Worksheet (everything, to a T)
 
-Living notes for LOAM. Updated 2026-10-27 evening. Also on GitHub:
+Living notes for LOAM. Updated 2026-10-27 night. Also on GitHub:
 AJChapagain/loam, `LOAM-WORKSHEET.md` (public repo). Code state: title
-screen + garden screen, planting, growth, saving, weather marks, animated
-weather, come-back message, coins, shop dock, drag-to-sell, TEST buttons.
-Shop + selling POLISH still pending (prompt delivered 2026-10-27, awaiting
-his Claude result). Still no daily claim, extra species, pick-up, or
-friends yet.
+screen + garden screen, planting, growth, saving, stacking weather
+effects, animated weather, come-back message, coins, Loam Florist
+storefront (left side, grounded), drag-to-sell, sway animations, TEST
+buttons, visible save system (Saved flash + export/import codes).
+`index.html` now lives IN the loam repo too (pushed by buddy 2026-10-27
+night, with his fixes — see below). Still no daily claim, extra species,
+pick-up, or friends yet.
 
 ## The game in one line
 
@@ -21,15 +23,17 @@ sell them later for coins, buy more seeds. One file: `index.html`.
   Current goal: test it and make it work — one mechanic per step, verified
   before moving on.
 - **The loop when done:** plant seeds → they grow over real time → weather
-  can mark blooms rare → sell roses for coins → buy more seeds → claim 1
-  free seed a day → more flower species → friends (only if he decides what
-  it is) → publish online → mobile decision.
+  effects stack on roses over days → sell roses for coins → buy more
+  seeds → claim 1 free seed a day → more flower species → friends (only
+  if he decides what it is) → publish online → mobile decision.
 - **How we build:** he runs Claude Free chat (not in VS Code), pastes the
   prompt + current code in one message; Claude returns the FULL updated
   index.html; buddy verifies the returned code by reading it before the
-  next step. The website repo (AJChapagain.github.io) is NEVER touched for
-  game work. `index.html` still lives only in his VS Code — getting it
-  into the loam repo is part of the publish step.
+  next step. Since 2026-10-27 night buddy also fixes the code DIRECTLY
+  when he says "you fix it" (first direct fix: We pay removal + tooltip
+  worth + multiplicative values). The website repo (AJChapagain.github.io)
+  is NEVER touched for game work. `index.html` now lives in the loam repo
+  (pushed 2026-10-27 night) as well as in his VS Code.
 
 ## Screens
 
@@ -85,16 +89,52 @@ sell them later for coins, buy more seeds. One file: `index.html`.
 | Golden Hour | 3% | golden | 80% | "Your rose turned Golden!" |
 | Ember heatwave | 5% | warm orange | 50% | "Your rose is an Ember rose!" |
 
-- **Marks:** rolled ONCE when a rose reaches full bloom, using the real
-  weather. Failed roll = classic rose. A mark is kept forever (including
-  after reload) and shown with a toast message when it lands.
-- **Looks** (recolors + decorations of the same rose art):
-  - Classic: red rose (the "sun rose" — a rose grown on a Sunny day).
-  - Rain-kissed: glossier, deeper red, white shine streaks, water droplets.
-  - Lightning-struck (storm): golden rose, lightning bolts + sparkles.
-  - Frost-touched: pale icy blue-white petals, frost crystals, icy rim.
-  - Golden: glowing gold petals, radiant halo, gold sparkles.
-  - Ember: deep orange-red petals, fiery rim, flame decorations, warm halo.
+- **Effects STACK (new system, prompt delivered 2026-10-27 night):** a rose
+  blooms as a plain Classic rose. After that, every day's weather can ADD
+  an effect — never replace, never recolor. The base rose always stays
+  classic red; each effect only adds its decoration: Rain = droplets +
+  shine, Storm = bolts + sparkles, Frost = crystals, Golden = gold
+  sparkles + halo, Ember = flames + warm halo. All five can sit on one
+  rose at once, decorations layered together.
+- **Daily rolls:** once per day, each fully grown rose missing that day's
+  weather effect rolls its chance (Rain 60, Storm 40, Frost 50, Golden 80,
+  Ember 50; Sunny = nothing). Rolls happen at midnight while open + catch
+  up on load for missed days (max 30), using each missed day's real
+  date-weather, only for roses already grown by then; missed-day gains
+  arrive as ONE summary toast. Seeds/sprouts never gain effects.
+- **Names grow:** effects in the order they landed + "rose" ("Rain-kissed
+  Lightning-struck rose"). No effects = Classic rose. All five = Rainbow
+  rose (rainbow shimmer look, value 4500 — see multiplicative values).
+- **Values MULTIPLY:** base 20 × one multiplier per effect — Rain ×1.5,
+  Storm ×2.5, Frost ×3, Ember ×4, Golden ×5. Single-effect values match
+  the old locked table exactly (30/50/60/80/100); stacked roses climb
+  fast (Rain+Storm = 75, Rain+Storm+Frost = 225); all five = Rainbow rose,
+  20 × 1.5 × 2.5 × 3 × 4 × 5 = **4500**. One function (`roseValue`) feeds
+  selling, the tooltip, and the sale reveal, so the number is always the
+  same everywhere.
+- **Old system replaced:** no mark rolled at bloom, no full-rose recolors,
+  no "Next weather" look swap (preview now layers the decoration on top,
+  display-only). Old saves migrate: single mark → effects list.
+- **Chance is per-rose (Grow a Garden rule):** every rose rolls its own
+  chance each day — some catch, some don't, never all-or-nothing. A whiff
+  is visible ("No rose gained ..." toast) so a miss feels real.
+- **Mystery values — REVISED 2026-10-27 night (his call, fixed by buddy
+  directly):** the "We pay" board is GONE entirely — the shop lists
+  nothing about values. The drag offer never previews a price ("Drag a
+  bloom here to sell"). BUT hovering a grown rose DOES show its effects
+  + what it is worth (he reversed the earlier no-value tooltip). The sale
+  itself still reveals the amount (coin pop + sold toast).
+- **Shop on the left (built 2026-10-27 night):** on wide screens the shop
+  stands on the grass to the LEFT of the bed, both grounded on the same
+  grass line. On phones it becomes a small "Shop" button on the left edge
+  that opens the storefront as a panel (dragging a rose onto the button
+  sells it).
+- **Visible save system (built 2026-10-27 night):** auto-save already
+  exists (localStorage `loam.save.v2`) but the player couldn't tell.
+  Added: a "Saved ✓" flash on every save + a Save button (near the coins
+  badge) opening a panel with last saved time, Export (copies the whole
+  save as one code) and Import (pastes a code back, validated like a
+  load, confirm-first since it replaces the garden).
 - **"Nothing at all" happens two ways:** Sunny days (55% of days) can never
   mark, and any weather day's roll can fail → classic rose.
 
@@ -155,24 +195,40 @@ roses climb with rarity (rarity = day weight × mark chance).
 | Ember rose | 80 | 5% × 50% = 2.5% |
 | Golden rose | 100 | 3% × 80% = 2.4% (rarest) |
 
-- Sell rule (for the selling step): a grown rose sells for its value above;
-  selling frees its mound. A marked rose is worth its marked value, not the
-  classic value.
+- Sell rule: a grown rose sells for its value; selling frees its mound.
+  Values MULTIPLY (new system, 2026-10-27 night): 20 × Rain 1.5 × Storm
+  2.5 × Frost 3 × Ember 4 × Golden 5; all five effects = Rainbow rose,
+  4500. Single-effect prices are unchanged from the table above.
 - Coins start: 50 coins.
 - Growth speed and value are NOT affected by weather in this version —
   weather changes looks only, for now.
 
 ## NOT built yet (in order, one step at a time)
 
-1. Shop + selling POLISH (queued — see below; the first version is sloppy).
-2. Daily free seed claim (1/day, can't double-claim).
-3. More flower species (daisy, lavender, orchid, ...).
-4. Picking plants back up (later, if wanted).
-5. Friends — UNDECIDED, parked (see below).
-6. Real growth times (hours / a day) + polish pass (sway, bed details).
-7. Publish online (GitHub Pages) for real phone testing.
-8. Mobile decision (after online works).
-9. TEST buttons removed before any public release (they're testing-only).
+Shop + selling polish: DONE 2026-10-27 ~20:59 via his own Claude pass —
+Loam Florist storefront (sign, awning, window, OPEN sign, door dropzone,
+coin pop, shop shake), sway animations; drag-to-sell KEPT. This supersedes
+the earlier sell-bar polish prompt (never applied).
+
+Weather effects STACK: BUILT 2026-10-27 night (code pasted) — effects list,
+daily rolls, missed-day catch-up (max 30 days), Rainbow rose, "We pay"
+board, "Apply weather" TEST button.
+
+Mystery values + left-side shop + visible save system: DONE 2026-10-27
+night — "We pay" board REMOVED entirely (buddy's direct fix, his call),
+tooltip now shows effects + worth, values MULTIPLICATIVE (Rainbow =
+4500), left-side grounded shop + Save panel (Saved flash + export/import
+codes) all in the code. `index.html` PUSHED to AJChapagain/loam by buddy
+same night.
+
+1. Daily free seed claim (1/day, can't double-claim).
+2. More flower species (daisy, lavender, orchid, ...).
+3. Picking plants back up (later, if wanted).
+4. Friends — UNDECIDED, parked (see below).
+5. Real growth times (hours / a day) + polish pass (sway, bed details).
+6. Publish online (GitHub Pages) for real phone testing.
+7. Mobile decision (after online works).
+8. TEST buttons removed before any public release (they're testing-only).
 
 ## Ideas (parked here until he says build it)
 
@@ -186,26 +242,28 @@ roses climb with rarity (rarity = day weight × mark chance).
 - Nothing here gets built until he says so. Ideas go in this section first,
   then become roadmap steps.
 
-## Coins + seed stand + selling (BUILT 2026-10-27 ~16:03, needs polish)
+## Coins + seed stand + selling (BUILT 2026-10-27, storefront since ~20:59)
 
 - Coins: start 50, pill next to the weather badge, saved in `loam.save.v2`
   (old saves without coins default to 50). Seed price 10, sell values as
   locked above. Buy works (deducts 10, +1 seed, toast, saves).
-- DEVIATION from the spec: Claude built DRAG-to-sell instead of the sell
-  bar — a permanent floating "Shop" dock with a dashed dropzone, a 🌹
-  emoji drag ghost, and hover tooltips. Tapping a grown rose does NOTHING
-  visible (dead `selectedRose` state, no sell bar was built), so keyboard
-  and tap-only players cannot sell at all. Tooltip shows a WRONG
-  "estimated value" (20) for growing plants whose mark isn't rolled yet,
-  and tooltips are hover-only (useless on phones). Coins pill uses a fixed
-  left offset and can overlap long weather names ("Golden Hour"). Seed row
-  is text-only, no seed art. Also a typo: `*background*` in the seed-slot
-  transition.
-- POLISH queued (prompt delivered 2026-10-27): cut drag-to-sell entirely,
-  Shop button + panel instead of the floating dock, tap sell bar showing
-  the real rose drawing + name + value + Sell button, price list in the
-  shop, no emoji rose stand-ins, weather + coins in one proper top row,
-  no value shown before bloom, fix the typo. Economy numbers unchanged.
+- Selling = DRAG a grown rose into the shop (his choice — kept over the
+  sell-bar idea). Shop is now the "Loam Florist" storefront: sign with
+  rose logo, red/cream awning, seed window with shelf, door dropzone with
+  OPEN sign, coin pop + shop shake on sale. The dropzone shows only
+  "Drag a bloom here to sell" — no price preview. The "We pay" board was
+  REMOVED 2026-10-27 night (his call); hovering a grown rose shows its
+  effects + worth instead.
+- Extra life added in the storefront pass: roses sway (storm sways
+  harder, ember sways warm), shimmer crystals, dripping rain droplets,
+  twinkling halos. The `*background*` typo was fixed in that pass.
+- NOTE: the sell-bar polish prompt from 2026-10-27 was SUPERSEDED and never
+  applied — he had Claude beautify the drag storefront instead.
+- Still-open gaps from the old critique (parked, not the current fight):
+  coins pill fixed offset can overlap "Golden Hour", drag ghost is still
+  an emoji (now varies by last effect: 🌈/🌼/🥀/🌺/🌹) instead of real rose
+  art, tapping a grown rose still does nothing visible (keyboard players
+  still can't sell).
 
 ## Friends (parked — his call, not designed yet)
 

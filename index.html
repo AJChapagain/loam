@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>LOAM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -62,6 +62,7 @@
      gap: 8px;
      padding-top: calc(clamp(14px, 4vh, 36px) + env(safe-area-inset-top, 0px));
      padding-bottom: calc(clamp(34px, 9vh, 80px) + env(safe-area-inset-bottom, 0px));
+     overflow-y: auto; overflow-x: hidden;   /* safety net: on a weird screen, scroll to it — never clip it invisibly */
      opacity: 0; visibility: hidden; transform: translateY(30px);
    }
    .garden-on .title-screen { opacity: 0; visibility: hidden; transform: translateY(-40px) scale(0.96); }
@@ -109,7 +110,10 @@
 
    .bed {
      position: relative;
-     width: min(94vw, 470px, calc((100dvh - 300px) * 1.3));
+     /* sized by BOTH width and height: the bed's height is width / 0.66, so the
+        width cap from height must be (available height) x 0.66 — the old x1.3
+        made the bed ~2x too tall and pushed the screen off the bottom */
+     width: min(100%, 470px, max(140px, calc((100dvh - 400px) * 0.66)));
      margin-bottom: 14px;
    }
    .bed::after {
@@ -274,9 +278,9 @@
 
    /* ---------- Top-left HUD: weather, coins, save ---------- */
    .hud {
-     position: absolute; z-index: 4;
-     top: calc(8px + env(safe-area-inset-top, 0px)); left: 8px;
-     max-width: calc(100% - 124px);
+     position: relative; top: auto; left: auto; z-index: 4;
+     align-self: flex-start;
+     max-width: calc(100% - 124px);   /* never run under the TEST panel, top-right */
      display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
    }
    .weather-badge {
@@ -629,7 +633,9 @@
 
    /* ---------- Layout by screen size ---------- */
    @media (min-width: 700px) {
-     .stage .bed { width: min(calc(100vw - 300px), 470px, calc((100dvh - 300px) * 1.3)); flex: none; }
+     /* the bed FLEXES to the space left beside the shop (never a fixed width
+        that can overflow the stage and clip the shop on the left / bed on the right) */
+     .stage .bed { flex: 1 1 0; min-width: 0; width: auto; max-width: min(470px, max(140px, calc((100dvh - 400px) * 0.66))); }
    }
    /* short windows: shrink the shop a little so it still fits beside the bed */
    @media (min-width: 700px) and (max-height: 700px) { .florist-dock { zoom: .88; } }
@@ -878,11 +884,11 @@
      // Ember 80, Golden 100) while stacked roses climb fast: a Rainbow rose
      // (all five) is 20 x 1.5 x 2.5 x 3 x 4 x 5 = 4500.
      var EFFECTS = {
-       rain:   { label: 'Rain-kissed',      mult: 1.5 },
-       storm:  { label: 'Lightning-struck', mult: 2.5 },
-       frost:  { label: 'Frost-touched',    mult: 3 },
-       ember:  { label: 'Ember',            mult: 4 },
-       golden: { label: 'Golden',           mult: 5 }
+       rain:   { label: 'Rain-kissed',      mult: 1.2 },
+       storm:  { label: 'Lightning-struck', mult: 1.5 },
+       frost:  { label: 'Frost-touched',    mult: 1.6 },
+       ember:  { label: 'Ember',            mult: 1.8 },
+       golden: { label: 'Golden',           mult: 2.0 }
      };
      var EFFECT_KEYS = ['rain', 'storm', 'frost', 'ember', 'golden'];
 
@@ -1130,19 +1136,19 @@
          art: sunflowerSVG
        },
        lavender: {
-         name: 'Lavender', seedPrice: 40, base: 90,
+         name: 'Lavender', seedPrice: 40, base: 80,
          classic: { l: '#8b5fbf', r: '#8b5fbf', t: '#a066ff', b: '#a066ff', c: '#c9a8ff', hi: '#e6d9ff', sp: '#6d4aa8', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' },
          icon: '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 36 L20 12" stroke="#3f8f2e" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="20" cy="8" r="4" fill="#a066ff"/><circle cx="20" cy="15" r="4.5" fill="#8b5fbf"/><circle cx="20" cy="22" r="4.5" fill="#a066ff"/><circle cx="20" cy="29" r="4" fill="#8b5fbf"/></svg>',
          art: lavenderSVG
        },
        orchid: {
-         name: 'Orchid', seedPrice: 75, base: 180,
+         name: 'Orchid', seedPrice: 75, base: 150,
          classic: { l: '#e85aa0', r: '#e85aa0', t: '#f27bb5', b: '#c93a8e', c: '#fff0a0', hi: '#ffd0e8', sp: '#a82e6e', lf: '#4fa335', lf2: '#5cb23f', st: '#3f8f2e' },
          icon: '<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="10" rx="6" ry="8" fill="#f27bb5"/><ellipse cx="10" cy="20" rx="8" ry="6" fill="#e85aa0"/><ellipse cx="30" cy="20" rx="8" ry="6" fill="#e85aa0"/><ellipse cx="13" cy="30" rx="7" ry="6" fill="#e85aa0"/><ellipse cx="27" cy="30" rx="7" ry="6" fill="#e85aa0"/><circle cx="20" cy="20" r="4" fill="#fff0a0"/></svg>',
          art: orchidSVG
        },
        moonflower: {
-         name: 'Moonflower', seedPrice: 120, base: 300,
+         name: 'Moonflower', seedPrice: 120, base: 240,
          classic: { l: '#dfe9ff', r: '#dfe9ff', t: '#ffffff', b: '#c8d8ff', c: '#fff6c2', hi: '#ffffff', sp: '#9fb8e8', lf: '#5cb23f', lf2: '#4fa335', st: '#3f8f2e' },
          icon: '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14" fill="rgba(180,200,255,0.35)"/><circle cx="20" cy="20" r="9" fill="#ffffff" stroke="#c8d8ff" stroke-width="1.5"/><circle cx="20" cy="20" r="3.5" fill="#fff6c2"/></svg>',
          art: moonflowerSVG

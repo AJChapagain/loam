@@ -73,9 +73,9 @@ old single-number seed counts become rose-only counts.
 |---|---|---|---|
 | Rose | 10 | 20 | red round bloom (the starter) |
 | Sunflower | 25 | 50 | big yellow bloom, brown center |
-| Lavender | 40 | 90 | purple spike |
-| Orchid | 75 | 180 | pink exotic bloom, arching stem |
-| Moonflower | 120 | 300 | white glowing bloom |
+| Lavender | 40 | 80 | purple spike |
+| Orchid | 75 | 150 | pink exotic bloom, arching stem |
+| Moonflower | 120 | 240 | white glowing bloom |
 
 - **Daily rotation (REMOVED 2026-10-28, his call):** all five seeds are
   available in the shop all the time now — no featured seed, no waiting
@@ -140,16 +140,15 @@ old single-number seed counts become rose-only counts.
   up on load for missed days (max 30), using each missed day's real
   date-weather, only for roses already grown by then; missed-day gains
   arrive as ONE summary toast. Seeds/sprouts never gain effects.
-- **Names grow:** effects in the order they landed + "rose" ("Rain-kissed
-  Lightning-struck rose"). No effects = Classic rose. All five = Rainbow
-  rose (rainbow shimmer look, value 4500 — see multiplicative values).
-- **Values MULTIPLY:** base 20 × one multiplier per effect — Rain ×1.5,
-  Storm ×2.5, Frost ×3, Ember ×4, Golden ×5. Single-effect values match
-  the old locked table exactly (30/50/60/80/100); stacked roses climb
-  fast (Rain+Storm = 75, Rain+Storm+Frost = 225); all five = Rainbow rose,
-  20 × 1.5 × 2.5 × 3 × 4 × 5 = **4500**. One function (`roseValue`) feeds
-  selling, the tooltip, and the sale reveal, so the number is always the
-  same everywhere.
+- **Names grow:** effects in the order they landed + plant name
+  ("Rain-kissed Lightning-struck Sunflower"). No effects = Classic. All
+  five = Rainbow (rainbow petals, value = base × ~10.4 — see the economy).
+- **Values MULTIPLY, kept relative (REBALANCED 2026-10-28):** base × one
+  multiplier per effect — Rain ×1.2, Storm ×1.5, Frost ×1.6, Ember ×1.8,
+  Golden ×2.0. All five together ≈ ×10.4, so a Rainbow rose is 207 (was
+  4500) and a Rainbow moonflower is 2,488 (was 67,500). One function
+  (`plantValue`) feeds selling, the tooltip, and the sale reveal, so the
+  number is always the same everywhere.
 - **Old system replaced:** no mark rolled at bloom, no full-rose recolors,
   no "Next weather" look swap (preview now layers the decoration on top,
   display-only). Old saves migrate: single mark → effects list.
@@ -185,8 +184,20 @@ old single-number seed counts become rose-only counts.
   bottom sheet (sits above the bottom edge, never covers the bed,
   scrolls if the space is short); the Shop tab hangs on the left edge
   vertically centered on the garden; the seed packet shrinks instead of
-  overflowing; TEST buttons shrink on phones. Desktop layout unchanged
-  (it already looked right).
+  overflowing; TEST buttons shrink on phones.
+- **Layout REVAMP (2026-10-28, his call — the screen looked weird on
+  phone AND PC, shop/coins invisible, right side off):** the bug was
+  real — the bed's width formula used (100dvh - 300px) x 1.3, but the
+  bed's height is width / 0.66, so the bed came out ~2x too tall and
+  pushed the screen off the bottom (clipped silently, no scroll). Fixed:
+  bed width = min(100%, 470px, max(140px, (100dvh - 400px) x 0.66)) — the
+  x0.66 IS the bed's aspect ratio, so its height always fits; desktop
+  bed flexes beside the fixed shop (flex: 1 1 0 + min-width: 0) so it
+  can never overflow the stage and clip the shop left / bed right; HUD
+  in normal flow on ALL screens (was absolute on desktop); pinch zoom
+  disabled (maximum-scale=1, user-scalable=no) so phones can't zoom the
+  layout into a broken state; garden screen scrolls vertically as a
+  safety net so content is reachable, never silently clipped.
 - **Visible save system (built 2026-10-27 night):** auto-save already
   exists (localStorage `loam.save.v2`) but the player couldn't tell.
   Added: a "Saved ✓" flash on every save + a Save button (near the coins
@@ -246,17 +257,22 @@ roses climb with rarity (rarity = day weight × mark chance).
 | Item | Value (coins) | Rarity (share of full blooms) |
 |---|---|---|
 | Rose seed (shop price) | 10 | — (bought, not grown) |
-| Classic rose ("sun rose") | 20 | always (Sunny days + failed rolls) |
-| Rain-kissed rose | 30 | 20% × 60% = 12% |
-| Lightning-struck rose (storm) | 50 | 10% × 40% = 4% |
-| Frost-touched rose | 60 | 7% × 50% = 3.5% |
-| Ember rose | 80 | 5% × 50% = 2.5% |
-| Golden rose | 100 | 3% × 80% = 2.4% (rarest) |
+| Classic rose | 20 | always (Sunny days + failed rolls) |
+| Rain-kissed rose | 24 | 20% × 60% = 12% |
+| Lightning-struck rose (storm) | 30 | 10% × 40% = 4% |
+| Frost-touched rose | 32 | 7% × 50% = 3.5% |
+| Ember rose | 36 | 5% × 50% = 2.5% |
+| Golden rose | 40 | 3% × 80% = 2.4% (rarest) |
 
-- Sell rule: a grown rose sells for its value; selling frees its mound.
-  Values MULTIPLY (new system, 2026-10-27 night): 20 × Rain 1.5 × Storm
-  2.5 × Frost 3 × Ember 4 × Golden 5; all five effects = Rainbow rose,
-  4500. Single-effect prices are unchanged from the table above.
+- Sell rule: a grown plant sells for its value; selling frees its mound.
+  Values MULTIPLY (rebalanced 2026-10-28): base × Rain 1.2 × Storm 1.5 ×
+  Frost 1.6 × Ember 1.8 × Golden 2.0; all five effects ≈ ×10.4 (Rainbow
+  rose 207, Rainbow moonflower 2,488).
+- THE RULE (2026-10-28): classic value = 2 × seed price, so one classic
+  sale buys about one seed of the NEXT tier (rose 20 → sunflower seed
+  25, sunflower 50 → lavender 40, lavender 80 → orchid 75, orchid 150 →
+  moonflower 120). No single plant — even a Rainbow — buys out the
+  shop, so progression survives; the 10-plot bed caps daily income.
 - Coins start: 50 coins.
 - Growth speed and value are NOT affected by weather in this version —
   weather changes looks only, for now.
@@ -299,6 +315,15 @@ buyable any time; all five blooms redrawn richer; each species its own
 size (Sunflower 115%, Moonflower 108%, Orchid 100%, Rose 92%, Lavender
 62%); seed packet moved from the top to a bottom bar under the bed.
 Pushed to AJChapagain/loam same night.
+
+Economy rebalance + layout revamp: DONE 2026-10-28 night (buddy direct
+fix) — classic = 2x seed price, effect multipliers cut to Rain 1.2 /
+Storm 1.5 / Frost 1.6 / Ember 1.8 / Golden 2.0 (Rainbow ≈ 10.4x, was 225x:
+Rainbow moonflower 2,488, was 67,500); bed height math fixed (x0.66, was
+x1.3 — the bug that pushed the screen off the bottom), desktop bed
+flexes beside the shop, HUD in normal flow everywhere, pinch zoom
+disabled, garden screen scrolls as a safety net. Pushed to
+AJChapagain/loam same night.
 
 1. Daily free seed claim (1/day, can't double-claim).
 2. Picking plants back up (later, if wanted).

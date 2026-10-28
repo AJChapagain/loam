@@ -118,7 +118,7 @@
    }
    .bed::after {
      content: ""; position: absolute; left: -4%; right: -4%; bottom: -16px; height: 34px; z-index: -1;
-     border-radius: 50%; background: rgba(30, 60, 15, 0.38); filter: blur(7px);
+     border-radius: 50%; background: radial-gradient(ellipse, rgba(30, 60, 15, 0.38) 0%, rgba(30, 60, 15, 0) 70%);
    }
 
    .box { position: relative; aspect-ratio: 1 / 0.66; }
@@ -461,7 +461,7 @@
    }
    .florist-dock::after {            /* contact shadow on the grass */
      content: ""; position: absolute; left: -6%; right: -6%; bottom: -15px; height: 32px; z-index: -1;
-     border-radius: 50%; background: rgba(30, 60, 15, 0.38); filter: blur(7px); pointer-events: none;
+     border-radius: 50%; background: radial-gradient(ellipse, rgba(30, 60, 15, 0.38) 0%, rgba(30, 60, 15, 0) 70%); pointer-events: none;
    }
    .florist-dock.drag-over { transform: scale(1.03); }
    .florist-dock.sold { animation: shopshake .5s ease; }
@@ -673,6 +673,11 @@
      .shop-name b { font-size: 18px; }
      .shop-logo { width: 30px; height: 30px; }
      .shop-dropzone { min-height: 62px; }
+     /* phones: shrink the spinning sun rays — a giant conic layer is the
+        most expensive paint on the screen — and drop the shop's drop-shadow */
+     .rays { width: 420px; height: 420px; top: -170px; right: -160px; }
+     .rays.golden { width: 520px; height: 520px; top: -230px; right: -220px; }
+     .florist-dock { filter: none; }
    }
    @media (max-width: 480px) {
      .save-label { display: none; }
@@ -879,10 +884,9 @@
      WEATHERS.forEach(function (w) { if (w.mark) MARK_MSG[w.mark] = w.msg; });
 
      // ---------- Stacking effects: names and value MULTIPLIERS ----------
-     // Each effect MULTIPLIES the running value, so single-effect prices stay
-     // exactly the locked ones (Classic 20, Rain 30, Lightning 50, Frost 60,
-     // Ember 80, Golden 100) while stacked roses climb fast: a Rainbow rose
-     // (all five) is 20 x 1.5 x 2.5 x 3 x 4 x 5 = 4500.
+     // Each effect MULTIPLIES the running value: a rose goes Classic 20,
+     // Rain 24, Storm 30, Frost 32, Ember 36, Golden 40, and a Rainbow rose
+     // (all five) is 20 x 1.2 x 1.5 x 1.6 x 1.8 x 2.0 = 207 (moonflower 2,488).
      var EFFECTS = {
        rain:   { label: 'Rain-kissed',      mult: 1.2 },
        storm:  { label: 'Lightning-struck', mult: 1.5 },
@@ -1044,8 +1048,8 @@
          '<ellipse cx="22" cy="19" rx="3.2" ry="6" fill="#fff" opacity="0.5" transform="rotate(-30 22 19)"/>' +
          '<ellipse cx="38" cy="24" rx="2" ry="4" fill="#fff" opacity="0.35" transform="rotate(25 38 24)"/>' +
          drop(18, 22, 2.2) + drop(41, 20, 2) + drop(30, 12, 1.8) +
-         drop(23, 37, 2.2) + drop(38, 36, 2) + drop(30, 30, 1.6) + drop(16, 72, 1.8) },
-       storm: { b: '', f:
+         drop(23, 37, 2.2) + drop(38, 36, 2) + drop(30, 30, 1.6) + drop(16, 72, 1.8) + drop(10, 78, 1.8) + drop(50, 78, 1.8) },
+       storm: { b: halo('150,80,255'), f:
          bolt(30, -8, 1, 0) + bolt(6, 8, 0.9, 0.3) + bolt(54, 8, 0.9, 0.5) +
          bolt(0, 28, 1, 0.6) + bolt(60, 28, 1, 0.2) +
          bolt(10, 50, 0.9, 0.4) + bolt(50, 50, 0.9, 0.7) +
@@ -1054,15 +1058,15 @@
          '<ellipse cx="30" cy="26" rx="27" ry="25" fill="rgba(220,240,255,0.30)"/>' +
          crystal(9, 27, 3.6, 0) + crystal(51, 27, 3.6, 0.7) + crystal(20, 8, 3, 1.2) + crystal(40, 8, 3, 0.2) +
          crystal(14, 44, 3, 0.4) + crystal(46, 44, 3, 1.6) + crystal(30, 48, 2.6, 0.9) +
-         crystal(24, 72, 2.4, 0.3) + crystal(36, 90, 2.4, 1.1) + crystal(16, 80, 2, 0.5) + crystal(44, 66, 2, 0.9) },
+         crystal(24, 72, 2.4, 0.3) + crystal(36, 90, 2.4, 1.1) + crystal(16, 80, 2, 0.5) + crystal(44, 66, 2, 0.9) + spark(30, -4, 0.9, 0.2, '#ffffff') + spark(8, 16, 0.8, 0.6, '#ffffff') + spark(52, 16, 0.8, 0.4, '#ffffff') },
        golden: { b: halo('255,214,80'), f:
          spark(1, 8, 1, 0, '#fff6c2') + spark(59, 12, 0.9, 0.4, '#fff6c2') + spark(4, 54, 0.8, 0.7, '#fff6c2') +
-         spark(56, 52, 1, 0.2, '#fff6c2') + spark(30, -9, 0.8, 0.55, '#fff6c2') },
+         spark(56, 52, 1, 0.2, '#fff6c2') + spark(30, -9, 0.8, 0.55, '#fff6c2') + spark(18, -2, 0.8, 0.9, '#fff6c2') + spark(44, 40, 0.8, 0.1, '#fff6c2') },
        ember: { b: halo('255,110,20'), f:
-         flame(12, 2, 1, 0) + flame(48, 2, 1, 0.3) + flame(-1, 44, 0.9, 0.5) + flame(61, 44, 0.9, 0.65) + flame(22, 49, 0.8, 0.15) },
+         flame(12, 2, 1, 0) + flame(48, 2, 1, 0.3) + flame(-1, 44, 0.9, 0.5) + flame(61, 44, 0.9, 0.65) + flame(22, 49, 0.8, 0.15) + flame(30, 92, 0.9, 0.4) },
        rainbow: { b: rainbowRing(), f:
          spark(-3, 28, 1.1, 0, '#ff6b6b') + spark(63, 28, 1.1, 0.3, '#6bd0ff') + spark(16, -6, 0.9, 0.6, '#7dff8a') +
-         spark(44, -6, 0.9, 0.15, '#ffd45e') + spark(30, 55, 0.9, 0.45, '#c79bff') }
+         spark(44, -6, 0.9, 0.15, '#ffd45e') + spark(30, 55, 0.9, 0.45, '#c79bff') + spark(30, -14, 1, 0.75, '#ffe14d') }
      };
 
      // The bloom is drawn bigger and rounder now, with each petal given a
@@ -1087,6 +1091,7 @@
          '<circle class="pt-c" cx="30" cy="26" r="9" fill="#e63b78"/>' +
          '<path class="pt-sp" d="M25 27 C25 20 35 20 35 27 C35 31 28 31 28 27 C28 24.5 32 24.5 32 27" stroke="#a3104a" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
          '<path class="pt-sp" d="M20 32 C22 36 26 38 30 38 C35 38 39 35 40 31" stroke="#a3104a" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.7"/>' +
+         '<path class="pt-sp" d="M24 22 C26 18 30 16 34 18" stroke="#a3104a" stroke-width="1.1" fill="none" stroke-linecap="round" opacity="0.6"/>' +
          '<ellipse class="pt-hi" cx="24" cy="18" rx="5" ry="3" fill="#f48fb1" opacity="0.7"/>' +
          '<ellipse class="pt-hi" cx="36" cy="22" rx="3" ry="2" fill="#f48fb1" opacity="0.5"/>' +
          '<g class="fxf"></g></svg>';
@@ -1174,6 +1179,11 @@
          '<path class="pt-b" d="M14 24 C14 40 46 40 46 24 C46 18 14 18 14 24 Z" fill="#f2c94c"/>' +
          '<circle class="pt-c" cx="30" cy="24" r="8.5" fill="#7a4a21"/>' +
          '<circle class="pt-sp" cx="30" cy="24" r="8.5" fill="none" stroke="#5a3a15" stroke-width="1.5"/>' +
+         '<circle cx="27" cy="21" r="1" fill="#5a3a15" opacity="0.55"/>' +
+         '<circle cx="33" cy="22" r="1" fill="#5a3a15" opacity="0.55"/>' +
+         '<circle cx="30" cy="28" r="1" fill="#5a3a15" opacity="0.55"/>' +
+         '<circle cx="27" cy="27" r="1" fill="#5a3a15" opacity="0.55"/>' +
+         '<circle cx="33" cy="27" r="1" fill="#5a3a15" opacity="0.55"/>' +
          '<ellipse class="pt-hi" cx="24" cy="15" rx="4.5" ry="2.6" fill="#fff3b0" opacity="0.8"/>' +
          '<g class="fxf"></g></svg>';
      }
@@ -1185,6 +1195,7 @@
          '<path class="lf2" d="M31 84 C42 82 48 74 48 64 C38 64 31 72 31 84 Z" fill="#4fa335"/>' +
          '<path class="lf" d="M29 100 C20 99 14 94 14 87 C22 87 29 92 29 100 Z" fill="#5cb23f"/>' +
          '<ellipse cx="30" cy="109" rx="14" ry="3.5" fill="#cf975c"/>' +
+         '<ellipse cx="30" cy="24" rx="11" ry="24" fill="#a066ff" opacity="0.18"/>' +
          '<ellipse class="pt-l" cx="22" cy="42" rx="4" ry="5" fill="#8b5fbf"/>' +
          '<ellipse class="pt-r" cx="38" cy="42" rx="4" ry="5" fill="#8b5fbf"/>' +
          '<ellipse class="pt-l" cx="22" cy="30" rx="5" ry="6" fill="#8b5fbf"/>' +
@@ -1219,6 +1230,7 @@
          '<ellipse class="pt-t" cx="38" cy="14" rx="9" ry="11" fill="#f27bb5"/>' +
          '<path class="pt-b" d="M30 36 C30 48 46 48 46 36 C46 31 30 31 30 36 Z" fill="#c93a8e"/>' +
          '<circle class="pt-c" cx="38" cy="30" r="5" fill="#fff0a0"/>' +
+         '<ellipse cx="38" cy="36" rx="4" ry="2.4" fill="#a82e6e" opacity="0.9"/>' +
          '<ellipse class="pt-hi" cx="33" cy="20" rx="4" ry="2.6" fill="#ffd0e8" opacity="0.8"/>' +
          '<g class="fxf"></g></svg>';
      }
@@ -1364,7 +1376,6 @@
      // ---------- Game state ----------
      var seedCounts = { rose: 1, sunflower: 0, lavender: 0, orchid: 0, moonflower: 0 };
      var coins = 50;
-     var selectedRose = null;
      var selectedSpecies = null;
      var plants = {};          // mound index -> { plantedAt: ms, species: 'rose', effects: ['rain', 'storm', ...] (in the order they landed) }
      var lastRoll = null;      // date string (YYYY-MM-DD) of the last day effects were rolled
@@ -1523,8 +1534,6 @@
        if (btn) buySeed(btn.getAttribute('data-buy'));
      });
 
-     function hideSellBar() { selectedRose = null; }
-     function showSellBar(index) { selectedRose = String(index); }
 
      // whatever is currently "the shop": the building, or on phones the Shop button (or the open panel)
      function shopEl() { return (narrowMq.matches && !shopOpen) ? shopTab : floristDock; }
@@ -1546,7 +1555,7 @@
 
      function sellPlantAt(index) {
        var p = plants[index];
-       if (!p || stageOf(p) !== 2) { hideSellBar(); return false; }
+       if (!p || stageOf(p) !== 2) return false;
        var name = plantName(p.species || 'rose', p.effects), value = plantValue(p.species || 'rose', p.effects);
        delete plants[index];
        var mound = mounds[index];
@@ -1556,7 +1565,6 @@
        mound.setAttribute('aria-label', 'Empty soil mound');
        mound.removeAttribute('title');
        coins += value;
-       hideSellBar();
        hideRoseTooltip();
        updateCoins();
        saveGame();
@@ -1675,26 +1683,28 @@
          var m = mounds[Number(dragState.index)];
          var pe = m.querySelector('.plant');
          if (pe) {
+           var w = pe.getBoundingClientRect().width;   // measure while it still sits on its mound
            dragState.el = pe;
            m.classList.add('dragging-rose');
            pe.classList.add('dragging-plant');
+           // pinned at the origin and moved with the translate property only:
+           // left/top on every pointermove forced a layout per frame on phones
            pe.style.position = 'fixed';
            pe.style.bottom = 'auto';
-           pe.style.left = x + 'px';
-           pe.style.top = y + 'px';
-           pe.style.translate = '-50% -55%';
+           pe.style.left = '0px';
+           pe.style.top = '0px';
+           pe.style.translate = 'calc(' + x + 'px - 50%) calc(' + y + 'px - 55%)';
            pe.style.rotate = '-9deg';
            pe.style.scale = '1.05';
-           pe.style.width = pe.getBoundingClientRect().width + 'px';
+           pe.style.width = w + 'px';
            pe.style.zIndex = '30';
            pe.style.pointerEvents = 'none';
            document.body.appendChild(pe);
          }
          hideRoseTooltip();
-         hideSellBar();
        }
        if (dragState.active) {
-         if (dragState.el) { dragState.el.style.left = x + 'px'; dragState.el.style.top = y + 'px'; }
+         if (dragState.el) { dragState.el.style.translate = 'calc(' + x + 'px - 50%) calc(' + y + 'px - 55%)'; }
          setShopHover(overShop(x, y));      // highlight only; the shop never names a price
        }
      }
@@ -1751,12 +1761,13 @@
        var html = '';
        SPECIES_KEYS.forEach(function (key) {
          var n = seedCounts[key] || 0;
-         html += '<button class="seed-slot' + (n === 0 ? ' empty' : '') + '" type="button" data-slot="' + key + '" aria-pressed="' + (selectedSpecies === key ? 'true' : 'false') + '" aria-label="' + SPECIES[key].name + ' seed">' +
-           SPECIES[key].icon + '<span class="seed-count">' + n + '</span></button>';
+         // a slot shows its count only when you actually own that seed; an empty
+         // slot is just empty — it never says 0
+         html += '<button class="seed-slot' + (n === 0 ? ' empty' : '') + '" type="button" data-slot="' + key + '"' + (n === 0 ? ' disabled' : '') + ' aria-pressed="' + (selectedSpecies === key ? 'true' : 'false') + '" aria-label="' + SPECIES[key].name + ' seed' + (n === 0 ? ' (none)' : '') + '">' +
+           SPECIES[key].icon + (n > 0 ? '<span class="seed-count">' + n + '</span>' : '') + '</button>';
        });
        packetSlots.innerHTML = html;
        bedEl.classList.toggle('planting', !!selectedSpecies && (seedCounts[selectedSpecies] || 0) > 0);
-       if (selectedSpecies) hideSellBar();
        if (selectedSpecies) hintEl.textContent = SPECIES[selectedSpecies].name + ' seed: tap a soil mound';
        else if (SPECIES_KEYS.some(function (k) { return (seedCounts[k] || 0) > 0; })) hintEl.textContent = 'Tap a seed, then a mound';
        else hintEl.textContent = 'Packet empty — buy seeds at the shop';
@@ -1786,11 +1797,15 @@
      function comeBackMsg() {
        var n = growingCount();
        if (!n) return null;
-       if (!shown.say) {
-         return n === 1 ? 'Your rose is growing \u2014 come back later to see it bloom!'
-                        : 'Your roses are growing \u2014 come back later to see them bloom!';
+       var oneName = null;
+       if (n === 1) {
+         Object.keys(plants).forEach(function (k) { if (stageOf(plants[k]) < 2) oneName = SPECIES[plants[k].species || 'rose'].name; });
        }
-       return shown.say + ' \u2014 come back later to see your ' + (n === 1 ? 'bloom' : 'blooms') + '!';
+       if (!shown.say) {
+         return n === 1 ? 'Your ' + oneName.toLowerCase() + ' is growing \u2014 come back later to see it bloom!'
+                        : 'Your plants are growing \u2014 come back later to see them bloom!';
+       }
+       return shown.say + ' \u2014 come back later to see your ' + (n === 1 ? oneName.toLowerCase() : 'blooms') + '!';
      }
 
      // ---------- Stacking effect rolls ----------
@@ -1802,7 +1817,10 @@
        res.any = true;
        if (isRainbow(p.effects)) res.rainbow++;
        var el = mounds[k].querySelector('.plant');
-       if (el && el.dataset.stage === '2') syncLayers(el, p, true);
+       if (el && el.dataset.stage === '2') {
+         syncLayers(el, p, true);
+         el.dataset.sig = '2|' + p.effects.join(',') + '|' + (previewOn ? (shown.mark || '') : '');
+       }
        updateMoundRoseState(k);
        if (tooltipIdx === String(k) && roseTooltip.classList.contains('show')) roseTooltip.innerHTML = tooltipMarkup(k);
      }
@@ -1858,16 +1876,21 @@
        if (total.any) announce(total, !(fromTick && days.length <= 1));
      }
 
-     // only redraws a plant when its STAGE changes; effects are layered in/out without a redraw
+     // Only touches a plant when something about it actually changed (stage,
+     // effects, or the weather preview). The 10s tick used to repaint every
+     // plant's layers and tooltip on every pass — on phones that was the
+     // steadiest source of jank, for zero visible change.
      function renderPlants() {
        Object.keys(plants).forEach(function (k) {
          var p = plants[k];
          var s = stageOf(p);
          var el = mounds[k].querySelector('.plant');
+         if (!el) return;   // being dragged: the plant element is following the pointer, not on its mound
+         var sig = s + '|' + p.effects.join(',') + '|' + (previewOn ? (shown.mark || '') : '');
+         if (el.dataset.sig === sig) return;
+         el.dataset.sig = sig;
          updateMoundRoseState(k);
          if (tooltipIdx === String(k) && roseTooltip.classList.contains('show')) roseTooltip.innerHTML = tooltipMarkup(k);
-
-         if (!el) return;   // being dragged: the plant element is following the pointer, not on its mound
          if (el.dataset.stage !== String(s)) {
            el.dataset.stage = s;
            el.className = 'plant s' + s + ' sp-' + (p.species || 'rose');
@@ -1917,26 +1940,15 @@
        if (suppressRoseClick) { e.preventDefault(); return; }
        var m = e.target.closest('.mound');
        if (!m) return;
-       var i = m.dataset.i;
        if (selectedSpecies && (seedCounts[selectedSpecies] || 0) > 0) { plantAt(m); return; }
-       if (plants[i] && stageOf(plants[i]) === 2) {
-         if (selectedRose === String(i)) hideSellBar();
-         else showSellBar(i);
-       } else {
-         hideSellBar();
-       }
+       // tapping a grown plant does nothing: selling is drag-to-shop only
      });
      rowsEl.addEventListener('keydown', function (e) {
        if (e.key !== 'Enter' && e.key !== ' ') return;
        var m = e.target.closest('.mound');
        if (m) {
          e.preventDefault();
-         var i = m.dataset.i;
          if (selectedSpecies && (seedCounts[selectedSpecies] || 0) > 0) plantAt(m);
-         else if (plants[i] && stageOf(plants[i]) === 2) {
-           if (selectedRose === String(i)) hideSellBar();
-           else showSellBar(i);
-         } else hideSellBar();
        }
      });
 
@@ -2002,7 +2014,6 @@
        seedCounts = s.seeds; coins = s.coins; plants = s.plants;
        lastRoll = s.lastRoll || todayString();
        selectedSpecies = null;
-       hideSellBar();
        hideRoseTooltip();
        Object.keys(plants).forEach(function (k) { addPlantEl(mounds[k]); });
        updatePacket();
